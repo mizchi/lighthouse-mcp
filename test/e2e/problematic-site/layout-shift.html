@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout Shift Test Page</title>
+    
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        /* Problem: No dimensions reserved for dynamic content */
+        .ad-placeholder { background: #f0f0f0; }
+        
+        /* Problem: Web fonts without font-display */
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('fonts/custom.woff2') format('woff2');
+            /* Missing font-display: swap */
+        }
+        
+        h1 { font-family: 'CustomFont', Arial, sans-serif; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Layout Shift Test Page</h1>
+        
+        <!-- Problem: Images without dimensions -->
+        <img src="images/banner.jpg" alt="Banner">
+        
+        <p>This is some content that will shift when images load.</p>
+        
+        <!-- Problem: Dynamic content injection -->
+        <div id="dynamic-content"></div>
+        
+        <p>More content below the dynamic section.</p>
+        
+        <!-- Problem: More images without dimensions -->
+        <div class="gallery">
+            <img src="images/photo1.jpg" alt="Photo 1">
+            <img src="images/photo2.jpg" alt="Photo 2">
+            <img src="images/photo3.jpg" alt="Photo 3">
+        </div>
+        
+        <!-- Problem: Async loaded content that pushes content down -->
+        <div class="ad-placeholder" id="ad-slot"></div>
+        
+        <p>Final content at the bottom of the page.</p>
+    </div>
+    
+    <script>
+        // Problem: Late content injection causing shifts
+        setTimeout(() => {
+            document.getElementById('dynamic-content').innerHTML = `
+                <div style="height: 200px; background: #e0e0e0; padding: 20px;">
+                    <h2>Dynamically Loaded Content</h2>
+                    <p>This content appears after initial render, causing layout shift.</p>
+                </div>
+            `;
+        }, 1000);
+        
+        // Problem: Ad loading simulation
+        setTimeout(() => {
+            document.getElementById('ad-slot').innerHTML = `
+                <div style="height: 250px; background: #ffeb3b; display: flex; align-items: center; justify-content: center;">
+                    <h3>Advertisement</h3>
+                </div>
+            `;
+        }, 2000);
+        
+        // Problem: Style changes that cause reflow
+        setTimeout(() => {
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                img.style.border = '5px solid #333';
+                img.style.padding = '10px';
+            });
+        }, 1500);
+    </script>
+</body>
+</html>

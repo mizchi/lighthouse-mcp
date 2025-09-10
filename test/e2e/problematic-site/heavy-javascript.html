@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heavy JavaScript Test Page</title>
+    
+    <!-- Problem: Multiple render-blocking scripts -->
+    <script src="scripts/vendor.js"></script>
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/main.js"></script>
+    
+    <!-- Problem: Inline blocking script -->
+    <script>
+        // Simulate heavy computation
+        function heavyComputation() {
+            let result = 0;
+            for (let i = 0; i < 1000000; i++) {
+                result += Math.sqrt(i);
+            }
+            return result;
+        }
+        
+        // Block rendering
+        console.log('Heavy computation result:', heavyComputation());
+    </script>
+    
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Heavy JavaScript Page</h1>
+        <p>This page has excessive JavaScript that blocks the main thread.</p>
+        
+        <!-- Problem: Too many event listeners -->
+        <div id="button-container"></div>
+        
+        <!-- Problem: Unused JavaScript -->
+        <script src="scripts/unused-library.js"></script>
+        
+        <!-- Problem: Non-deferred third-party scripts -->
+        <script src="https://cdn.example.com/analytics.js"></script>
+        <script src="https://cdn.example.com/tracking.js"></script>
+    </div>
+    
+    <!-- Problem: More blocking scripts at the end -->
+    <script>
+        // Create many event listeners
+        const container = document.getElementById('button-container');
+        for (let i = 0; i < 100; i++) {
+            const button = document.createElement('button');
+            button.textContent = `Button ${i}`;
+            button.addEventListener('click', function() {
+                console.log(`Button ${i} clicked`);
+            });
+            container.appendChild(button);
+        }
+        
+        // More heavy computations
+        setTimeout(() => {
+            for (let i = 0; i < 50000; i++) {
+                document.body.style.backgroundColor = i % 2 ? '#fff' : '#fafafa';
+            }
+        }, 100);
+    </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パフォーマンス問題のあるサイト - E2Eテスト用</title>
+    
+    <!-- 問題1: レンダーブロッキングCSS -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/utilities.css">
+    
+    <!-- 問題2: 大きなインラインスタイル -->
+    <style>
+        /* 未使用のCSS */
+        .unused-class-1 { display: flex; justify-content: center; }
+        .unused-class-2 { margin: 20px; padding: 30px; }
+        .unused-class-3 { background: linear-gradient(to right, #ff0000, #00ff00); }
+        /* ... 実際には使用されない大量のCSS ... */
+        @media (max-width: 768px) {
+            .unused-mobile-class { display: none; }
+        }
+    </style>
+    
+    <!-- 問題3: 同期的なJavaScript -->
+    <script src="scripts/analytics.js"></script>
+    <script src="scripts/utils.js"></script>
+</head>
+<body>
+    <header>
+        <h1>パフォーマンステストサイト</h1>
+        <nav>
+            <ul>
+                <li><a href="#home">ホーム</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#products">製品</a></li>
+                <li><a href="#contact">お問い合わせ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <!-- 問題4: 最適化されていない大きな画像 -->
+            <img src="images/hero-banner.jpg" alt="Hero Banner" width="1920" height="1080">
+            
+            <div class="hero-content">
+                <h2>パフォーマンスの問題を意図的に含むサイト</h2>
+                <p>このサイトは以下の問題を含んでいます：</p>
+                <ul>
+                    <li>レンダーブロッキングリソース</li>
+                    <li>最適化されていない画像</li>
+                    <li>過大なDOM構造</li>
+                    <li>レイアウトシフトの原因</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="products">
+            <h2>製品一覧</h2>
+            <div class="product-grid">
+                <!-- 問題5: 遅延読み込みなしの大量の画像 -->
+                <div class="product-item">
+                    <img src="images/product-1.jpg" alt="Product 1" width="400" height="400">
+                    <h3>製品1</h3>
+                    <p>説明テキスト</p>
+                </div>
+                <div class="product-item">
+                    <img src="images/product-2.jpg" alt="Product 2" width="400" height="400">
+                    <h3>製品2</h3>
+                    <p>説明テキスト</p>
+                </div>
+                <div class="product-item">
+                    <img src="images/product-3.jpg" alt="Product 3" width="400" height="400">
+                    <h3>製品3</h3>
+                    <p>説明テキスト</p>
+                </div>
+                <!-- さらに多くの製品... -->
+            </div>
+        </section>
+
+        <!-- 問題6: 過大なDOM構造 -->
+        <section class="nested-content">
+            <div><div><div><div><div><div><div><div><div><div>
+                <p>深くネストされたコンテンツ</p>
+            </div></div></div></div></div></div></div></div></div></div>
+        </section>
+
+        <!-- 問題7: Webフォントの不適切な読み込み -->
+        <style>
+            @font-face {
+                font-family: 'CustomFont';
+                src: url('fonts/custom-font.woff2') format('woff2');
+                /* font-displayが指定されていない */
+            }
+            body {
+                font-family: 'CustomFont', sans-serif;
+            }
+        </style>
+
+        <!-- 問題8: サードパーティスクリプトの同期読み込み -->
+        <script src="https://example.com/third-party-widget.js"></script>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 パフォーマンステストサイト</p>
+    </footer>
+
+    <!-- 問題9: 大きなインラインJavaScript -->
+    <script>
+        // 実行時間の長いスクリプト
+        function performHeavyCalculation() {
+            let result = 0;
+            for (let i = 0; i < 1000000; i++) {
+                result += Math.sqrt(i);
+            }
+            return result;
+        }
+        
+        // DOMContentLoadedで実行される重い処理
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Heavy calculation result:', performHeavyCalculation());
+            
+            // レイアウトシフトを引き起こす動的コンテンツ
+            setTimeout(() => {
+                const banner = document.createElement('div');
+                banner.style.height = '100px';
+                banner.style.background = 'red';
+                banner.textContent = '動的に挿入されるバナー';
+                document.body.insertBefore(banner, document.body.firstChild);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

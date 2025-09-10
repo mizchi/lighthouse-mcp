@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poor Caching Test Page</title>
+    
+    <!-- Problem: Assets with cache-busting query strings -->
+    <link rel="stylesheet" href="styles/main.css?v=1234567890">
+    <link rel="stylesheet" href="styles/theme.css?t=<?php echo time(); ?>">
+    
+    <!-- Problem: No cache headers for static resources -->
+    <script src="scripts/app.js?nocache=true"></script>
+    
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .resource-list { margin: 20px 0; }
+        .resource-list img { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Poor Caching Configuration</h1>
+        <p>This page demonstrates various caching anti-patterns.</p>
+        
+        <!-- Problem: Duplicate resource loading -->
+        <script src="scripts/jquery.min.js"></script>
+        <script src="scripts/jquery.min.js"></script>
+        
+        <!-- Problem: Resources with no-cache directives -->
+        <img src="images/logo.png?no-cache=1" alt="Logo">
+        
+        <!-- Problem: Multiple versions of the same library -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        
+        <div class="resource-list">
+            <!-- Problem: Images loaded multiple times with different query strings -->
+            <img src="images/icon.png?size=small" alt="Icon">
+            <img src="images/icon.png?size=medium" alt="Icon">
+            <img src="images/icon.png?size=large" alt="Icon">
+        </div>
+        
+        <!-- Problem: Inline scripts that could be cached -->
+        <script>
+            // This same script appears on every page
+            function initializeApp() {
+                console.log('App initialized');
+                // ... lots of code that could be in an external file
+                const config = {
+                    apiUrl: 'https://api.example.com',
+                    version: '1.0.0',
+                    features: ['feature1', 'feature2', 'feature3']
+                };
+                
+                // Simulate large inline script
+                for (let i = 0; i < 100; i++) {
+                    window['func' + i] = function() {
+                        return i * 2;
+                    };
+                }
+            }
+            initializeApp();
+        </script>
+        
+        <!-- Problem: External resources without proper cache headers -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+        <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+        
+        <!-- Problem: Frequently changing resources without proper versioning -->
+        <link rel="stylesheet" href="styles/dynamic.css">
+        <script src="scripts/config.js"></script>
+    </div>
+    
+    <script>
+        // Problem: AJAX requests without caching
+        setInterval(() => {
+            fetch('/api/timestamp')
+                .then(response => response.text())
+                .then(data => console.log('Timestamp:', data));
+        }, 5000);
+    </script>
+</body>
+</html>

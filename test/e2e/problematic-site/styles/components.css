@@ -1,0 +1,22 @@
+/* コンポーネント用CSS - レンダーブロッキング */
+.button {
+    background: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+}
+
+.card {
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+/* 大量の未使用コンポーネントスタイル */
+.component-unused-1 { background: linear-gradient(45deg, #ff6b6b, #4ecdc4); }
+.component-unused-2 { transform: scale(1.1); transition: all 0.3s; }
+.component-unused-3 { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+.component-unused-4 { mix-blend-mode: multiply; }
+.component-unused-5 { writing-mode: vertical-rl; }

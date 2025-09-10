@@ -1,0 +1,28 @@
+/* ユーティリティCSS - レンダーブロッキング */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.m-1 { margin: 0.25rem; }
+.m-2 { margin: 0.5rem; }
+.m-3 { margin: 1rem; }
+.m-4 { margin: 1.5rem; }
+.m-5 { margin: 2rem; }
+
+.p-1 { padding: 0.25rem; }
+.p-2 { padding: 0.5rem; }
+.p-3 { padding: 1rem; }
+.p-4 { padding: 1.5rem; }
+.p-5 { padding: 2rem; }
+
+/* 大量の未使用ユーティリティクラス */
+.bg-red { background-color: red; }
+.bg-blue { background-color: blue; }
+.bg-green { background-color: green; }
+.bg-yellow { background-color: yellow; }
+.bg-purple { background-color: purple; }
+.bg-orange { background-color: orange; }
+.bg-pink { background-color: pink; }
+.bg-brown { background-color: brown; }
+.bg-gray { background-color: gray; }
+.bg-black { background-color: black; }

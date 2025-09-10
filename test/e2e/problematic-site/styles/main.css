@@ -1,0 +1,67 @@
+/* メインスタイルシート - レンダーブロッキング */
+body {
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* 大量の未使用CSS */
+.unused-component-1 { display: grid; grid-template-columns: repeat(12, 1fr); }
+.unused-component-2 { transform: rotate(45deg); }
+.unused-component-3 { animation: spin 2s linear infinite; }
+.unused-component-4 { filter: blur(5px); }
+.unused-component-5 { backdrop-filter: blur(10px); }
+
+/* 実際に使用されるスタイル */
+header {
+    background: #f4f4f4;
+    padding: 1rem;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 1rem;
+}
+
+.hero {
+    text-align: center;
+    padding: 2rem;
+}
+
+.hero img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* 複雑なセレクタ */
+body > main > section > div > div > div > p {
+    color: #666;
+}
+
+/* 未使用の@keyframes */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+/* さらに多くの未使用スタイル... */
+.feature-1,
+.feature-2,
+.feature-3,
+.feature-4,
+.feature-5,
+.feature-6,
+.feature-7,
+.feature-8,
+.feature-9,
+.feature-10 {
+    display: none;
+}
