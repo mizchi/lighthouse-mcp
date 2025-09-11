@@ -7,16 +7,39 @@ import lighthouse from 'lighthouse';
 import { Result, err, ok } from 'neverthrow';
 import pLimit from 'p-limit';
 import { Browser } from 'puppeteer';
+import { join } from 'path';
 import { createLighthouseConfig, normalizeLighthouseReport } from './runner.js';
 import { getBrowserPool, resetBrowserPool } from './browserPool.js';
+import { getDefaultStorage } from './reportStorage.js';
 
 /**
  * Lighthouseを実行（ブラウザプールを使用）
  */
 export async function runLighthouse(
   url: string,
-  config: LighthouseConfig & { userDataDir?: string } = {},
+  config: LighthouseConfig & { userDataDir?: string; gather?: boolean } = {},
 ): Promise<Result<LighthouseReport, Error>> {
+  const { gather = false } = config;
+  const storage = getDefaultStorage({ baseDir: config.userDataDir ? join(config.userDataDir, 'reports') : '.lhdata/reports' });
+
+  // gather=false の場合、既存のレポートをチェック
+  if (!gather) {
+    const existingReport = storage.findReport(
+      url,
+      config.device || 'mobile',
+      config.categories || ['performance'],
+      1, // 1時間以内のレポートを使用
+    );
+
+    if (existingReport.isOk() && existingReport.value) {
+      console.log(`Using cached report for ${url} (${existingReport.value.id})`);
+      const loadedReport = storage.loadReport(existingReport.value);
+      if (loadedReport.isOk()) {
+        return ok(loadedReport.value);
+      }
+    }
+  }
+
   // ブラウザプールを取得
   const browserPool = getBrowserPool(config.maxBrowsers || 5, config.userDataDir);
 
@@ -46,6 +69,20 @@ export async function runLighthouse(
     // レポートを正規化
     const report = normalizeLighthouseReport(result.lhr);
     
+    // レポートを保存
+    const saveResult = storage.saveReport(
+      url,
+      config.device || 'mobile',
+      config.categories || ['performance'],
+      report,
+    );
+
+    if (saveResult.isErr()) {
+      console.warn(`Failed to save report: ${saveResult.error.message}`);
+    } else {
+      console.log(`Report saved: ${saveResult.value.id}`);
+    }
+
     return ok(report);
   } catch (error) {
     return err(error instanceof Error ? error : new Error(String(error)));
@@ -62,7 +99,7 @@ export async function runLighthouse(
  */
 export async function runLighthouseBatch(
   urls: string[],
-  config: LighthouseConfig & { userDataDir?: string } = {},
+  config: LighthouseConfig & { userDataDir?: string; gather?: boolean } = {},
 ): Promise<Result<LighthouseReport[], Error[]>> {
   // ブラウザプールを取得
   const browserPool = getBrowserPool(config.maxBrowsers || 5, config.userDataDir);

@@ -124,6 +124,8 @@ export interface LighthouseAudits {
 export interface LighthouseReport extends Partial<Omit<LH.Result, 'audits' | 'categories'>> {
   // Make requestedUrl always defined for our use case
   requestedUrl: string;
+  // finalUrl should also be defined
+  finalUrl: string;
   // Use our more specific audit types
   audits: LighthouseAudits;
   // Keep categories with Lighthouse's native type

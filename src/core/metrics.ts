@@ -2,7 +2,7 @@
  * Lighthouseメトリクス解析 - 純粋関数
  */
 
-import type { LighthouseReport, LighthouseAudits, PerformanceMetrics } from '../types/index.js';
+import type { LighthouseReport, PerformanceMetrics } from '../types/index.js';
 
 /**
  * パフォーマンスメトリクスを抽出

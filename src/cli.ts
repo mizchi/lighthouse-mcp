@@ -3,7 +3,7 @@
 import { parseArgs } from "node:util";
 import { runLighthouse } from "./core/lighthouse.js";
 import { performDeepAnalysis } from "./analyzers/deepAnalysis.js";
-import { createDeepAnalysisTool } from "./mcp/deep-analysis-tool.js";
+import { createDeepAnalysisTool } from "./mcp/deepAnalysisTool.js";
 
 const helpText = `
 Lighthouse MCP
@@ -82,8 +82,8 @@ async function runAnalysis(url: string, options: AnalysisOptions) {
       let output = "";
       if (Array.isArray(analysisResult.content)) {
         output = analysisResult.content
-          .filter((item) => item.type === "text")
-          .map((item) => item.text)
+          .filter((item: any) => item.type === "text")
+          .map((item: any) => item.text)
           .join("\n");
       } else if (typeof analysisResult.content === "string") {
         output = analysisResult.content;

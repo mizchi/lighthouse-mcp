@@ -23,6 +23,9 @@ export interface LighthouseConfig {
   maxBrowsers?: number;
   timeout?: number;
   userDataDir?: string;
+  formFactor?: 'mobile' | 'desktop';
+  screenEmulation?: any;
+  logLevel?: string;
 }
 
 export interface PerformanceMetrics {

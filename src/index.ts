@@ -12,7 +12,7 @@ export * from './analyzers/patterns';
 export * from './analyzers/performance';
 
 // MCP Tools  
-export * from './mcp/deep-analysis-tool';
+export * from './mcp/deepAnalysisTool';
 
 // Type definitions
 export type { Problem } from './types/index';

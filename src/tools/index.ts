@@ -2,32 +2,118 @@
  * MCP Tools Export
  */
 
-export { analyzeUrlTool, executeAnalyzeUrl } from './analyzeUrl.js';
-export type { AnalyzeUrlParams, AnalyzeUrlResult } from './analyzeUrl.js';
+// Layer 1 - Collection Tools
+export {
+  l1CollectTool,
+  executeL1Collect,
+} from './l1-collect-single.js';
+export type {
+  L1CollectParams,
+  L1CollectResult,
+} from './l1-collect-single.js';
 
-export { deepAnalysisTool, executeDeepAnalysis } from './deepAnalysis.js';
-export type { DeepAnalysisParams, DeepAnalysisResult } from './deepAnalysis.js';
+export {
+  l1BatchCollectTool,
+  executeL1BatchCollect,
+} from './l1-collect-batch.js';
+export type {
+  L1BatchCollectParams,
+  L1BatchCollectResult,
+} from './l1-collect-batch.js';
 
-export { generatePromptTool, executeGeneratePrompt } from './generatePrompt.js';
-export type { GeneratePromptParams, GeneratePromptResult } from './generatePrompt.js';
+export {
+  l1ListReportsTool,
+  executeL1ListReports,
+} from './l1-list-reports.js';
+export type {
+  L1ListReportsParams,
+  L1ListReportsResult,
+} from './l1-list-reports.js';
 
-export { batchAnalyzeTool, executeBatchAnalyze } from './batchAnalyze.js';
-export type { BatchAnalyzeParams, BatchAnalyzeResult } from './batchAnalyze.js';
+export {
+  l1GetReportTool,
+  executeL1GetReport,
+} from './l1-get-report.js';
+export type {
+  L1GetReportParams,
+  L1GetReportResult,
+} from './l1-get-report.js';
+
+// Layer 2 - Analysis Tools
+export {
+  l2PerformanceAnalysisTool,
+  executeL2PerformanceAnalysis,
+} from './l2-performance-analysis.js';
+export type {
+  L2PerformanceAnalysisParams,
+  L2PerformanceAnalysisResult,
+} from './l2-performance-analysis.js';
+
+export {
+  l2CriticalChainTool,
+  executeL2CriticalChain,
+} from './l2-critical-chain.js';
+export type {
+  L2CriticalChainParams,
+  L2CriticalChainResult,
+} from './l2-critical-chain.js';
+
+export {
+  l2UnusedCodeTool,
+  executeL2UnusedCode,
+} from './l2-unused-code.js';
+export type {
+  L2UnusedCodeParams,
+  L2UnusedCodeResult,
+} from './l2-unused-code.js';
+
+export {
+  l2DeepAnalysisTool,
+  executeL2DeepAnalysis,
+} from './l2-deep-analysis.js';
+export type {
+  L2DeepAnalysisParams,
+  L2DeepAnalysisResult,
+} from './l2-deep-analysis.js';
+
+export {
+  l2ScoreAnalysisTool,
+  executeL2ScoreAnalysis,
+} from './l2-score-analysis.js';
+export type {
+  L2ScoreAnalysisParams,
+  L2ScoreAnalysisResult,
+} from './l2-score-analysis.js';
 
 /**
  * All available MCP tools
  */
 export const allTools = async () => {
-  const { analyzeUrlTool } = await import('./analyzeUrl.js');
-  const { deepAnalysisTool } = await import('./deepAnalysis.js');
-  const { generatePromptTool } = await import('./generatePrompt.js');
-  const { batchAnalyzeTool } = await import('./batchAnalyze.js');
+  // Layer 1 tools
+  const { l1CollectTool } = await import('./l1-collect-single.js');
+  const { l1BatchCollectTool } = await import('./l1-collect-batch.js');
+  const { l1ListReportsTool } = await import('./l1-list-reports.js');
+  const { l1GetReportTool } = await import('./l1-get-report.js');
+
+  // Layer 2 tools
+  const { l2PerformanceAnalysisTool } = await import('./l2-performance-analysis.js');
+  const { l2CriticalChainTool } = await import('./l2-critical-chain.js');
+  const { l2UnusedCodeTool } = await import('./l2-unused-code.js');
+  const { l2DeepAnalysisTool } = await import('./l2-deep-analysis.js');
+  const { l2ScoreAnalysisTool } = await import('./l2-score-analysis.js');
 
   return [
-    analyzeUrlTool,
-    deepAnalysisTool,
-    generatePromptTool,
-    batchAnalyzeTool,
+    // Layer 1 - Collection
+    l1CollectTool,
+    l1BatchCollectTool,
+    l1ListReportsTool,
+    l1GetReportTool,
+    // Layer 2 - Analysis
+    l2PerformanceAnalysisTool,
+    l2CriticalChainTool,
+    l2UnusedCodeTool,
+    l2DeepAnalysisTool,
+    l2ScoreAnalysisTool,
   ];
 };
 
@@ -36,21 +122,43 @@ export const allTools = async () => {
  */
 export async function executeTool(name: string, params: any): Promise<any> {
   switch (name) {
-    case 'analyze_url': {
-      const { executeAnalyzeUrl } = await import('./analyzeUrl.js');
-      return executeAnalyzeUrl(params);
+    // Layer 1 tools
+    case 'l1_collect': {
+      const { executeL1Collect } = await import('./l1-collect-single.js');
+      return executeL1Collect(params);
     }
-    case 'deep_analysis': {
-      const { executeDeepAnalysis } = await import('./deepAnalysis.js');
-      return executeDeepAnalysis(params);
+    case 'l1_batch_collect': {
+      const { executeL1BatchCollect } = await import('./l1-collect-batch.js');
+      return executeL1BatchCollect(params);
     }
-    case 'generate_prompt': {
-      const { executeGeneratePrompt } = await import('./generatePrompt.js');
-      return executeGeneratePrompt(params);
+    case 'l1_list_reports': {
+      const { executeL1ListReports } = await import('./l1-list-reports.js');
+      return executeL1ListReports(params);
     }
-    case 'batch_analyze': {
-      const { executeBatchAnalyze } = await import('./batchAnalyze.js');
-      return executeBatchAnalyze(params);
+    case 'l1_get_report': {
+      const { executeL1GetReport } = await import('./l1-get-report.js');
+      return executeL1GetReport(params);
+    }
+    // Layer 2 tools
+    case 'l2_performance_analysis': {
+      const { executeL2PerformanceAnalysis } = await import('./l2-performance-analysis.js');
+      return executeL2PerformanceAnalysis(params);
+    }
+    case 'l2_critical_chain': {
+      const { executeL2CriticalChain } = await import('./l2-critical-chain.js');
+      return executeL2CriticalChain(params);
+    }
+    case 'l2_unused_code': {
+      const { executeL2UnusedCode } = await import('./l2-unused-code.js');
+      return executeL2UnusedCode(params);
+    }
+    case 'l2_deep_analysis': {
+      const { executeL2DeepAnalysis } = await import('./l2-deep-analysis.js');
+      return executeL2DeepAnalysis(params);
+    }
+    case 'l2_score_analysis': {
+      const { executeL2ScoreAnalysis } = await import('./l2-score-analysis.js');
+      return executeL2ScoreAnalysis(params);
     }
     default:
       throw new Error(`Unknown tool: ${name}`);

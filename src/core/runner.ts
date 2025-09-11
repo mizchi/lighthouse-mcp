@@ -8,14 +8,14 @@ import type * as LH from 'lighthouse/types/lh.d.ts';
 /**
  * Lighthouse実行設定を生成
  */
-export function createLighthouseConfig(config: LighthouseConfig): Partial<LH.Config> {
-  const settings: Partial<LH.Config.Settings> = {
-    formFactor: config.formFactor || 'mobile',
+export function createLighthouseConfig(config: LighthouseConfig): any {
+  const settings = {
+    formFactor: (config.formFactor || config.device || 'mobile') as 'mobile' | 'desktop',
     screenEmulation: config.screenEmulation || {
-      mobile: true,
-      width: 360,
-      height: 640,
-      deviceScaleFactor: 2,
+      mobile: config.device !== 'desktop',
+      width: config.device === 'desktop' ? 1920 : 360,
+      height: config.device === 'desktop' ? 1080 : 640,
+      deviceScaleFactor: config.device === 'desktop' ? 1 : 2,
       disabled: false,
     },
     throttling: config.throttling || {
@@ -44,8 +44,8 @@ export function createLighthouseConfig(config: LighthouseConfig): Partial<LH.Con
  */
 export function normalizeLighthouseReport(rawReport: LH.Result): LighthouseReport {
   return {
-    requestedUrl: rawReport.requestedUrl,
-    finalUrl: rawReport.finalUrl,
+    requestedUrl: rawReport.requestedUrl || '',
+    finalUrl: rawReport.finalUrl || rawReport.requestedUrl || '',
     fetchTime: rawReport.fetchTime,
     lighthouseVersion: rawReport.lighthouseVersion,
     userAgent: rawReport.userAgent,

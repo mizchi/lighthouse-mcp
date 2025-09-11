@@ -1,0 +1,116 @@
+/**
+ * L2 Unused Code Analysis Tool
+ * Analyzes unused CSS and JavaScript
+ */
+
+import { executeL1GetReport } from './l1-get-report.js';
+import { executeL1Collect } from './l1-collect-single.js';
+import { analyzeUnusedCode } from '../analyzers/unusedCode.js';
+import type { LighthouseReport } from '../types/index.js';
+
+export interface L2UnusedCodeParams {
+  reportId?: string;
+  url?: string;
+  device?: 'mobile' | 'desktop';
+  threshold?: number;
+}
+
+export interface L2UnusedCodeResult {
+  reportId: string;
+  unusedCode: {
+    totalWastedBytes: number;
+    totalWastedMs: number;
+    files: Array<{
+      url: string;
+      wastedBytes: number;
+      wastedPercent: number;
+      totalBytes: number;
+      type: 'css' | 'js';
+    }>;
+    recommendations: string[];
+  };
+}
+
+export const l2UnusedCodeTool = {
+  name: 'l2_unused_code',
+  description: 'Analyze unused CSS and JavaScript (Layer 2)',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      reportId: {
+        type: 'string',
+        description: 'Report ID to analyze',
+      },
+      url: {
+        type: 'string',
+        description: 'URL to analyze (if no reportId)',
+      },
+      device: {
+        type: 'string',
+        enum: ['mobile', 'desktop'],
+        default: 'mobile',
+        description: 'Device type',
+      },
+      threshold: {
+        type: 'number',
+        default: 1024,
+        description: 'Minimum wasted bytes to report',
+      },
+    },
+  },
+};
+
+export async function executeL2UnusedCode(params: L2UnusedCodeParams): Promise<L2UnusedCodeResult> {
+  let reportId = params.reportId;
+  let report: LighthouseReport;
+
+  // Get report data
+  if (reportId) {
+    const result = await executeL1GetReport({ reportId });
+    report = result.data;
+  } else if (params.url) {
+    const collectResult = await executeL1Collect({
+      url: params.url,
+      device: params.device || 'mobile',
+      categories: ['performance'],
+      gather: false,
+    });
+    reportId = collectResult.reportId;
+    
+    const result = await executeL1GetReport({ reportId });
+    report = result.data;
+  } else {
+    throw new Error('Either reportId or url is required');
+  }
+
+  // Analyze unused code
+  const unusedCodeAnalysis = analyzeUnusedCode(report);
+
+  if (!unusedCodeAnalysis) {
+    return {
+      reportId: reportId!,
+      unusedCode: {
+        totalWastedBytes: 0,
+        totalWastedMs: 0,
+        files: [],
+        recommendations: ['No significant unused code detected'],
+      },
+    };
+  }
+
+  return {
+    reportId: reportId!,
+    unusedCode: {
+      totalWastedBytes: unusedCodeAnalysis.totalWastedBytes,
+      totalWastedMs: 0, // Not available in current analysis
+      files: unusedCodeAnalysis.items.map((item: any) => ({
+        url: item.url,
+        wastedBytes: item.unusedBytes,
+        wastedPercent: item.unusedPercent,
+        totalBytes: item.totalBytes,
+        type: item.type,
+      })),
+      recommendations: unusedCodeAnalysis.recommendations,
+    },
+  };
+}
