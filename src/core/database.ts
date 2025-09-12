@@ -142,7 +142,7 @@ export class LighthouseDatabase {
       report.runtimeError?.message ?? null,
     );
 
-    return result.lastInsertRowId as number;
+    return Number(result.lastInsertRowId);
   }
 
   /**

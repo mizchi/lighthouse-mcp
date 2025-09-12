@@ -2,6 +2,9 @@
 
 /**
  * 有名なサイトをクロールしてLighthouseスコアが悪いページを特定
+ * 
+ * 使用方法:
+ * npx tsx crawl-popular-sites.ts
  */
 
 import { executeL1BatchCollect } from './dist/tools/l1-collect-batch.js';

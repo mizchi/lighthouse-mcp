@@ -2,6 +2,9 @@
 
 /**
  * 有名サイトの簡易クロール（少数のサイトでテスト）
+ * 
+ * 使用方法:
+ * npx tsx crawl-popular-sites-simple.ts
  */
 
 import { executeL1BatchCollect } from './dist/tools/l1-collect-batch.js';
