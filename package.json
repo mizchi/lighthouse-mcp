@@ -25,6 +25,7 @@
     "test:e2e": "vitest run test/e2e",
     "test:unit": "vitest run src",
     "test:integration": "vitest run test/integration",
+    "test:third-party": "vitest run test/integration/third-party",
     "test:coverage": "vitest run --coverage",
     "lint": "oxlint --tsconfig ./tsconfig.json",
     "format": "prettier --write src",
