@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import { DatabaseSync } from 'node:sqlite';
 import { existsSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
 import type { LighthouseReport } from '../types/lighthouse.js';
@@ -34,13 +34,13 @@ export interface AnalysisResult {
 }
 
 export class LighthouseDatabase {
-  private db: Database.Database;
+  private db: DatabaseSync;
   private readonly dbPath: string;
 
   constructor(dbPath: string = '.lhdata/results.db') {
     this.dbPath = dbPath;
     this.ensureDirectory();
-    this.db = new Database(this.dbPath);
+    this.db = new DatabaseSync(this.dbPath);
     this.initDatabase();
   }
 
@@ -113,36 +113,36 @@ export class LighthouseDatabase {
         fcp, lcp, cls, tbt, tti, si,
         report_json, error
       ) VALUES (
-        @url, @device, @timestamp,
-        @performance_score, @accessibility_score, @best_practices_score, @seo_score, @pwa_score,
-        @fcp, @lcp, @cls, @tbt, @tti, @si,
-        @report_json, @error
+        ?, ?, ?,
+        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?,
+        ?, ?
       )
     `);
 
     const categories = report.categories || {};
     const audits = report.audits || {};
 
-    const result = stmt.run({
-      url: report.finalUrl || report.requestedUrl,
+    const result = stmt.run(
+      report.finalUrl || report.requestedUrl,
       device,
-      timestamp: report.fetchTime,
-      performance_score: categories.performance?.score ?? null,
-      accessibility_score: categories.accessibility?.score ?? null,
-      best_practices_score: categories['best-practices']?.score ?? null,
-      seo_score: categories.seo?.score ?? null,
-      pwa_score: categories.pwa?.score ?? null,
-      fcp: audits['first-contentful-paint']?.numericValue ?? null,
-      lcp: audits['largest-contentful-paint']?.numericValue ?? null,
-      cls: audits['cumulative-layout-shift']?.numericValue ?? null,
-      tbt: audits['total-blocking-time']?.numericValue ?? null,
-      tti: audits['interactive']?.numericValue ?? null,
-      si: audits['speed-index']?.numericValue ?? null,
-      report_json: JSON.stringify(report),
-      error: report.runtimeError?.message ?? null,
-    });
+      report.fetchTime,
+      categories.performance?.score ?? null,
+      categories.accessibility?.score ?? null,
+      categories['best-practices']?.score ?? null,
+      categories.seo?.score ?? null,
+      categories.pwa?.score ?? null,
+      audits['first-contentful-paint']?.numericValue ?? null,
+      audits['largest-contentful-paint']?.numericValue ?? null,
+      audits['cumulative-layout-shift']?.numericValue ?? null,
+      audits['total-blocking-time']?.numericValue ?? null,
+      audits['interactive']?.numericValue ?? null,
+      audits['speed-index']?.numericValue ?? null,
+      JSON.stringify(report),
+      report.runtimeError?.message ?? null,
+    );
 
-    return result.lastInsertRowid as number;
+    return result.lastInsertRowId as number;
   }
 
   /**
@@ -158,18 +158,18 @@ export class LighthouseDatabase {
       INSERT OR REPLACE INTO analysis_results (
         crawl_id, tool_name, analysis_type, result_json
       ) VALUES (
-        @crawl_id, @tool_name, @analysis_type, @result_json
+        ?, ?, ?, ?
       )
     `);
 
-    const insertResult = stmt.run({
-      crawl_id: crawlId,
-      tool_name: toolName,
-      analysis_type: analysisType,
-      result_json: JSON.stringify(result),
-    });
+    const insertResult = stmt.run(
+      crawlId,
+      toolName,
+      analysisType,
+      JSON.stringify(result),
+    );
 
-    return insertResult.lastInsertRowid as number;
+    return insertResult.lastInsertRowId as number;
   }
 
   /**
