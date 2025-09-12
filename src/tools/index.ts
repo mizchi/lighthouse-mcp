@@ -98,6 +98,19 @@ export type {
   L2ProgressiveThirdPartyResult,
 } from './l2-third-party-impact.js';
 
+// Layer 3 - Interpretation Tools
+export {
+  l3DatabaseQueryTool,
+  executeL3DatabaseQuery,
+} from './l3-database-query.js';
+export type {
+  L3DatabaseQueryParams,
+  L3DatabaseQueryResult,
+  TrendAnalysis,
+  ComparisonResult,
+  DatabaseStatistics,
+} from './l3-database-query.js';
+
 /**
  * All available MCP tools
  */
@@ -115,6 +128,9 @@ export const allTools = async () => {
   const { l2DeepAnalysisTool } = await import('./l2-deep-analysis.js');
   const { l2ScoreAnalysisTool } = await import('./l2-score-analysis.js');
   const { l2ThirdPartyImpactTool, l2ProgressiveThirdPartyTool } = await import('./l2-third-party-impact.js');
+  
+  // Layer 3 tools
+  const { l3DatabaseQueryTool } = await import('./l3-database-query.js');
 
   return [
     // Layer 1 - Collection
@@ -130,6 +146,8 @@ export const allTools = async () => {
     l2ScoreAnalysisTool,
     l2ThirdPartyImpactTool,
     l2ProgressiveThirdPartyTool,
+    // Layer 3 - Interpretation
+    l3DatabaseQueryTool,
   ];
 };
 
@@ -183,6 +201,11 @@ export async function executeTool(name: string, params: any): Promise<any> {
     case 'l2_progressive_third_party': {
       const { executeL2ProgressiveThirdParty } = await import('./l2-third-party-impact.js');
       return executeL2ProgressiveThirdParty(params);
+    }
+    // Layer 3 tools
+    case 'l3_database_query': {
+      const { executeL3DatabaseQuery } = await import('./l3-database-query.js');
+      return executeL3DatabaseQuery(params);
     }
     default:
       throw new Error(`Unknown tool: ${name}`);

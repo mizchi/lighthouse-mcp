@@ -11,16 +11,24 @@ import { join } from 'path';
 import { createLighthouseConfig, normalizeLighthouseReport } from './runner.js';
 import { getBrowserPool, resetBrowserPool } from './browserPool.js';
 import { getDefaultStorage } from './reportStorage.js';
+import { LighthouseDatabase } from './database.js';
 
 /**
  * Lighthouseを実行（ブラウザプールを使用）
  */
 export async function runLighthouse(
   url: string,
-  config: LighthouseConfig & { userDataDir?: string; gather?: boolean; blockDomains?: string[] } = {},
+  config: LighthouseConfig & { userDataDir?: string; gather?: boolean; blockDomains?: string[]; saveToDb?: boolean } = {},
 ): Promise<Result<LighthouseReport, Error>> {
-  const { gather = false, blockDomains } = config;
+  const { gather = false, blockDomains, saveToDb = true } = config;
   const storage = getDefaultStorage({ baseDir: config.userDataDir ? join(config.userDataDir, 'reports') : '.lhdata/reports' });
+  
+  // Initialize database if saving to DB is enabled
+  let db: LighthouseDatabase | null = null;
+  if (saveToDb) {
+    const dbPath = config.userDataDir ? join(config.userDataDir, 'results.db') : '.lhdata/results.db';
+    db = new LighthouseDatabase(dbPath);
+  }
 
   // gather=false の場合、既存のレポートをチェック
   if (!gather) {
@@ -88,7 +96,7 @@ export async function runLighthouse(
     // レポートを正規化
     const report = normalizeLighthouseReport(result.lhr);
     
-    // レポートを保存
+    // レポートをファイルシステムに保存
     const saveResult = storage.saveReport(
       url,
       config.device || 'mobile',
@@ -101,6 +109,16 @@ export async function runLighthouse(
     } else {
       console.log(`Report saved: ${saveResult.value.id}`);
     }
+    
+    // レポートをデータベースに保存
+    if (db) {
+      try {
+        const crawlId = db.saveCrawlResult(report, config.device || 'mobile');
+        console.log(`Report saved to database with ID: ${crawlId}`);
+      } catch (dbError) {
+        console.warn(`Failed to save to database: ${dbError instanceof Error ? dbError.message : String(dbError)}`);
+      }
+    }
 
     return ok(report);
   } catch (error) {
@@ -109,6 +127,10 @@ export async function runLighthouse(
     // ブラウザをプールに返却
     if (browser) {
       await browserPool.releaseBrowser(browser);
+    }
+    // データベース接続をクローズ
+    if (db) {
+      db.close();
     }
   }
 }
