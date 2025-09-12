@@ -85,6 +85,19 @@ export type {
   L2ScoreAnalysisResult,
 } from './l2-score-analysis.js';
 
+export {
+  l2ThirdPartyImpactTool,
+  l2ProgressiveThirdPartyTool,
+  executeL2ThirdPartyImpact,
+  executeL2ProgressiveThirdParty,
+} from './l2-third-party-impact.js';
+export type {
+  L2ThirdPartyImpactParams,
+  L2ThirdPartyImpactResult,
+  L2ProgressiveThirdPartyParams,
+  L2ProgressiveThirdPartyResult,
+} from './l2-third-party-impact.js';
+
 /**
  * All available MCP tools
  */
@@ -101,6 +114,7 @@ export const allTools = async () => {
   const { l2UnusedCodeTool } = await import('./l2-unused-code.js');
   const { l2DeepAnalysisTool } = await import('./l2-deep-analysis.js');
   const { l2ScoreAnalysisTool } = await import('./l2-score-analysis.js');
+  const { l2ThirdPartyImpactTool, l2ProgressiveThirdPartyTool } = await import('./l2-third-party-impact.js');
 
   return [
     // Layer 1 - Collection
@@ -114,6 +128,8 @@ export const allTools = async () => {
     l2UnusedCodeTool,
     l2DeepAnalysisTool,
     l2ScoreAnalysisTool,
+    l2ThirdPartyImpactTool,
+    l2ProgressiveThirdPartyTool,
   ];
 };
 
@@ -159,6 +175,14 @@ export async function executeTool(name: string, params: any): Promise<any> {
     case 'l2_score_analysis': {
       const { executeL2ScoreAnalysis } = await import('./l2-score-analysis.js');
       return executeL2ScoreAnalysis(params);
+    }
+    case 'l2_third_party_impact': {
+      const { executeL2ThirdPartyImpact } = await import('./l2-third-party-impact.js');
+      return executeL2ThirdPartyImpact(params);
+    }
+    case 'l2_progressive_third_party': {
+      const { executeL2ProgressiveThirdParty } = await import('./l2-third-party-impact.js');
+      return executeL2ProgressiveThirdParty(params);
     }
     default:
       throw new Error(`Unknown tool: ${name}`);

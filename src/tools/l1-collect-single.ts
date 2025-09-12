@@ -12,6 +12,7 @@ export interface L1CollectParams {
   categories?: string[];
   gather?: boolean;
   timeout?: number;
+  blockDomains?: string[];
 }
 
 export interface L1CollectResult {
@@ -58,6 +59,11 @@ export const l1CollectTool = {
         default: 120000,
         description: 'Timeout in milliseconds',
       },
+      blockDomains: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Domains to block during analysis',
+      },
     },
     required: ['url'],
   },
@@ -70,6 +76,7 @@ export async function executeL1Collect(params: L1CollectParams): Promise<L1Colle
     categories = ['performance'],
     gather = false,
     timeout = 120000,
+    blockDomains,
   } = params;
 
   // Validate URL
@@ -97,12 +104,13 @@ export async function executeL1Collect(params: L1CollectParams): Promise<L1Colle
   }
 
   // Run Lighthouse
-  const config: LighthouseConfig & { gather?: boolean } = {
+  const config: LighthouseConfig & { gather?: boolean; blockDomains?: string[] } = {
     device,
     categories,
     timeout,
     gather: true, // Always gather for new collection
     userDataDir: '.lhdata/mcp',
+    blockDomains,
   };
 
   const result = await runLighthouse(url, config);

@@ -17,9 +17,9 @@ import { getDefaultStorage } from './reportStorage.js';
  */
 export async function runLighthouse(
   url: string,
-  config: LighthouseConfig & { userDataDir?: string; gather?: boolean } = {},
+  config: LighthouseConfig & { userDataDir?: string; gather?: boolean; blockDomains?: string[] } = {},
 ): Promise<Result<LighthouseReport, Error>> {
-  const { gather = false } = config;
+  const { gather = false, blockDomains } = config;
   const storage = getDefaultStorage({ baseDir: config.userDataDir ? join(config.userDataDir, 'reports') : '.lhdata/reports' });
 
   // gather=false の場合、既存のレポートをチェック
@@ -49,12 +49,31 @@ export async function runLighthouse(
     // ブラウザプールからブラウザを取得
     browser = await browserPool.getBrowser();
 
+    // ドメインブロック設定を Lighthouse の blockedUrlPatterns として設定
+    let blockedUrlPatterns: string[] = [];
+    if (blockDomains && blockDomains.length > 0) {
+      // ドメインをURLパターンに変換
+      blockedUrlPatterns = blockDomains.flatMap(domain => [
+        `*://${domain}/*`,
+        `*://*.${domain}/*`,
+      ]);
+    }
+
     // ブラウザのエンドポイントを取得
     const browserWSEndpoint = browser.wsEndpoint();
     const { port } = new URL(browserWSEndpoint);
 
     // Lighthouse設定を生成
     const lhConfig = createLighthouseConfig(config);
+    
+    // blockedUrlPatternsを設定に追加
+    if (blockedUrlPatterns.length > 0) {
+      lhConfig.settings = {
+        ...lhConfig.settings,
+        blockedUrlPatterns,
+      };
+    }
+    
     const lighthouseOptions = {
       ...lhConfig,
       port: Number(port),
