@@ -97,12 +97,30 @@ The MCP server provides tools for AI models to perform Lighthouse analysis:
 lhmcp --mcp
 ```
 
-### Available MCP Tools
+### Tool Architecture (L1/L2/L3)
 
-- `runLighthouse`: Execute Lighthouse analysis on a URL
-- `analyzePerformance`: Deep analysis of Lighthouse reports
-- `getCriticalChain`: Analyze critical request chains
-- `getUnusedCode`: Detect unused JavaScript and CSS
+The tools are organized in a three-layer architecture:
+
+#### L1 - Collection Layer
+Tools that directly execute Lighthouse and collect raw data:
+- `l1_collect_single`: Execute Lighthouse analysis on a single URL
+- `l1_collect_multi`: Parallel analysis of multiple URLs
+- `l1_collect_comparative`: Collect data for comparative analysis
+
+#### L2 - Analysis Layer
+Tools that analyze collected logs and reports directly:
+- `l2_critical_chain`: Analyze critical request chains
+- `l2_unused_code`: Detect and quantify unused JavaScript and CSS
+- `l2_deep_analysis`: Deep performance metrics analysis
+- `l2_score_analysis`: Systematic score and improvement analysis
+- `l2_third_party_impact`: Measure third-party script impact
+- `l2_progressive_third_party`: Progressive third-party blocking analysis
+
+#### L3 - Interpretation Layer (Future)
+Tools requiring human insight or AI model reasoning:
+- `l3_optimization_strategy`: Optimization strategy planning (planned)
+- `l3_business_impact`: Business impact assessment (planned)
+- `l3_custom_recommendations`: Custom recommendations (planned)
 
 ## Development
 
@@ -135,21 +153,23 @@ pnpm cli -- https://example.com
 ```
 lighthouse-mcp/
 ├── src/
-│   ├── analysis/          # Analysis modules
-│   │   ├── deep-analyzer.ts
-│   │   ├── critical-chain-analyzer.ts
-│   │   ├── unused-code-analyzer.ts
+│   ├── analyzers/         # Analysis modules
+│   │   ├── criticalChain.ts
+│   │   ├── unusedCode.ts
+│   │   ├── thirdParty.ts
 │   │   └── ...
-│   ├── lighthouse/        # Lighthouse execution
-│   │   ├── executor.ts
-│   │   ├── metrics.ts
-│   │   └── runner.ts
-│   ├── mcp/              # MCP server and tools
-│   │   ├── server.ts
-│   │   └── deep-analysis-tool.ts
+│   ├── core/             # Core functionality
+│   │   ├── lighthouse.ts
+│   │   ├── browser.ts
+│   │   └── config.ts
+│   ├── tools/            # MCP tools (L1/L2/L3 layers)
+│   │   ├── l1-collect-*.ts      # L1: Data collection
+│   │   ├── l2-*.ts              # L2: Direct analysis
+│   │   └── index.ts
 │   ├── types/            # TypeScript types
 │   └── cli.ts            # CLI entry point
 ├── test/                 # Test files
+├── CLAUDE.md            # Architecture guide
 └── package.json
 ```
 
