@@ -7,6 +7,8 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['./test/setup.ts'],
     includeSource: ['src/**/*.{js,ts}'],
+    threads: false,
+    fileParallelism: false,
     exclude: ['node_modules', 'dist', 'tmp', '**/*.config.ts'],
     coverage: {
       provider: 'v8',

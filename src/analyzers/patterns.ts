@@ -14,7 +14,8 @@ export function detectPatterns(report: LighthouseReport): Pattern[] {
   const audits = report.audits;
 
   // Large JavaScript pattern
-  if (audits['bootup-time']?.score !== null && audits['bootup-time'].score < 0.5) {
+  const bootupAudit = audits['bootup-time'];
+  if (typeof bootupAudit?.score === 'number' && bootupAudit.score < 0.5) {
     patterns.push({
       id: 'large-javascript',
       name: 'Large JavaScript Bundles',
@@ -29,7 +30,8 @@ export function detectPatterns(report: LighthouseReport): Pattern[] {
   }
 
   // Unoptimized images pattern
-  if (audits['uses-optimized-images']?.score !== null && audits['uses-optimized-images'].score < 0.5) {
+  const optimizedImagesAudit = audits['uses-optimized-images'];
+  if (typeof optimizedImagesAudit?.score === 'number' && optimizedImagesAudit.score < 0.5) {
     patterns.push({
       id: 'unoptimized-images',
       name: 'Unoptimized Images',
@@ -44,7 +46,8 @@ export function detectPatterns(report: LighthouseReport): Pattern[] {
   }
 
   // Render blocking resources pattern
-  if (audits['render-blocking-resources']?.score !== null && audits['render-blocking-resources'].score < 0.5) {
+  const renderBlockingAudit = audits['render-blocking-resources'];
+  if (typeof renderBlockingAudit?.score === 'number' && renderBlockingAudit.score < 0.5) {
     patterns.push({
       id: 'render-blocking',
       name: 'Render Blocking Resources',
