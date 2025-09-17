@@ -54,8 +54,19 @@ describe('L2 Deep Analysis Tool', () => {
   };
 
   const mockCriticalChains = {
-    totalDuration: 2000,
-    longestChain: [],
+    chains: [],
+    longestChain: {
+      id: 'empty',
+      nodes: [],
+      startTime: 0,
+      endTime: 0,
+      totalDuration: 0,
+      totalTransferSize: 0,
+    },
+    totalDuration: 0,
+    totalTransferSize: 0,
+    bottleneck: undefined,
+    lcp: undefined,
   };
 
   const mockUnusedCodeResult = {

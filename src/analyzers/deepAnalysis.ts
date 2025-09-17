@@ -42,7 +42,7 @@ export function performDeepAnalysis(report: LighthouseReport): DeepAnalysisResul
   const scoreAnalysis = analyzeReport(report);
   const problems = detectProblems(report);
   const patterns = detectPatterns(report);
-  const criticalChains = analyzeCriticalChains(report);
+  const criticalChains = analyzeCriticalChains(report) ?? createEmptyCriticalChainAnalysis();
   const unusedCode = analyzeUnusedCode(report);
   
   // Extract core web vitals and metrics
@@ -147,4 +147,22 @@ function generateRecommendations(
   recommendations.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
   
   return recommendations;
+}
+
+function createEmptyCriticalChainAnalysis(): CriticalChainAnalysis {
+  return {
+    chains: [],
+    longestChain: {
+      id: 'empty',
+      nodes: [],
+      startTime: 0,
+      endTime: 0,
+      totalDuration: 0,
+      totalTransferSize: 0,
+    },
+    totalDuration: 0,
+    totalTransferSize: 0,
+    bottleneck: undefined,
+    lcp: undefined,
+  };
 }

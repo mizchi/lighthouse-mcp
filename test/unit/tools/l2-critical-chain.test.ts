@@ -21,32 +21,79 @@ describe('L2 Critical Chain Tool', () => {
     },
   };
 
-  const mockChainAnalysis = {
+  const mockChainNodes = [
+    {
+      url: 'https://example.com/index.html',
+      duration: 800,
+      transferSize: 25000,
+      resourceType: 'document',
+      latency: 200,
+      downloadTime: 600,
+      startTime: 0,
+      endTime: 800,
+      startOffset: 0,
+      depth: 0,
+      contribution: 0.32,
+    },
+    {
+      url: 'https://example.com/style.css',
+      duration: 600,
+      transferSize: 45000,
+      resourceType: 'stylesheet',
+      latency: 100,
+      downloadTime: 500,
+      startTime: 800,
+      endTime: 1400,
+      startOffset: 800,
+      depth: 1,
+      contribution: 0.24,
+    },
+    {
+      url: 'https://example.com/script.js',
+      duration: 1100,
+      transferSize: 80000,
+      resourceType: 'script',
+      latency: 300,
+      downloadTime: 800,
+      startTime: 1400,
+      endTime: 2500,
+      startOffset: 1400,
+      depth: 2,
+      contribution: 0.44,
+    },
+  ];
+
+  const mockChainPath = {
+    id: 'root-chain',
+    nodes: mockChainNodes,
+    startTime: 0,
+    endTime: 2500,
     totalDuration: 2500,
     totalTransferSize: 150000,
-    longestChain: [
-      {
-        url: 'https://example.com/index.html',
-        duration: 800,
-        transferSize: 25000,
-        resourceType: 'document',
-      },
-      {
-        url: 'https://example.com/style.css',
-        duration: 600,
-        transferSize: 45000,
-        resourceType: 'stylesheet',
-      },
-      {
-        url: 'https://example.com/script.js',
-        duration: 1100,
-        transferSize: 80000,
-        resourceType: 'script',
-      },
-    ],
-    bottleneck: {
-      url: 'https://example.com/script.js',
-      impact: 'High blocking time',
+  };
+
+  const mockBottleneck = {
+    url: 'https://example.com/script.js',
+    duration: 1100,
+    contribution: 0.44,
+    impact: 'High',
+    startTime: 1400,
+    endTime: 2500,
+    reason: 'Mock reason',
+  };
+
+  const mockChainAnalysis = {
+    chains: [mockChainPath],
+    longestChain: mockChainPath,
+    totalDuration: 2500,
+    totalTransferSize: 150000,
+    bottleneck: mockBottleneck,
+    lcp: {
+      timestamp: 2300,
+      candidateUrl: 'https://example.com/script.js',
+      durationToLcp: 2300,
+      nodes: mockChainNodes,
+      bottleneck: mockBottleneck,
     },
   };
 
@@ -95,18 +142,21 @@ describe('L2 Critical Chain Tool', () => {
       expect(result.criticalChain.longestChain.length).toBe(3);
       expect(result.criticalChain.longestChain.transferSize).toBe(150000);
       expect(result.criticalChain.chains).toHaveLength(3);
-      
-      expect(result.criticalChain.chains[0]).toEqual({
+
+      expect(result.criticalChain.chains[0]).toMatchObject({
         url: 'https://example.com/index.html',
         duration: 800,
         depth: 0,
         transferSize: 25000,
         isRenderBlocking: true,
+        latency: 200,
       });
 
       expect(result.criticalChain.chains[2].isRenderBlocking).toBe(false);
-      expect(result.criticalChain.recommendations).toContain('Optimize https://example.com/script.js: High blocking time');
-      expect(result.criticalChain.recommendations).toContain('Reduce critical chain duration');
+      expect(result.criticalChain.bottleneck?.url).toBe('https://example.com/script.js');
+      expect(result.criticalChain.lcp?.bottleneck?.url).toBe('https://example.com/script.js');
+      expect(result.criticalChain.recommendations.some(r => r.includes('Investigate https://example.com/script.js'))).toBe(true);
+      expect(result.criticalChain.recommendations.some(r => r.includes('Reduce critical chain duration'))).toBe(true);
     });
 
     it('should collect and analyze by URL', async () => {
@@ -178,13 +228,38 @@ describe('L2 Critical Chain Tool', () => {
 
     it('should correctly identify render-blocking resources', async () => {
       const chainWithVariousTypes = {
-        ...mockChainAnalysis,
-        longestChain: [
-          { url: 'doc.html', duration: 100, transferSize: 1000, resourceType: 'document' },
-          { url: 'style.css', duration: 100, transferSize: 1000, resourceType: 'stylesheet' },
-          { url: 'script.js', duration: 100, transferSize: 1000, resourceType: 'script' },
-          { url: 'image.png', duration: 100, transferSize: 1000, resourceType: 'image' },
+        chains: [
+          {
+            id: 'root',
+            startTime: 0,
+            endTime: 400,
+            totalDuration: 400,
+            totalTransferSize: 4000,
+            nodes: [
+              { url: 'doc.html', duration: 100, transferSize: 1000, resourceType: 'document', latency: 40, downloadTime: 60, startTime: 0, endTime: 100, startOffset: 0, depth: 0, contribution: 0.25 },
+              { url: 'style.css', duration: 100, transferSize: 1000, resourceType: 'stylesheet', latency: 20, downloadTime: 80, startTime: 100, endTime: 200, startOffset: 100, depth: 1, contribution: 0.25 },
+              { url: 'script.js', duration: 100, transferSize: 1000, resourceType: 'script', latency: 20, downloadTime: 80, startTime: 200, endTime: 300, startOffset: 200, depth: 2, contribution: 0.25 },
+              { url: 'image.png', duration: 100, transferSize: 1000, resourceType: 'image', latency: 10, downloadTime: 90, startTime: 300, endTime: 400, startOffset: 300, depth: 3, contribution: 0.25 },
+            ],
+          },
         ],
+        longestChain: {
+          id: 'root',
+          startTime: 0,
+          endTime: 400,
+          totalDuration: 400,
+          totalTransferSize: 4000,
+          nodes: [
+            { url: 'doc.html', duration: 100, transferSize: 1000, resourceType: 'document', latency: 40, downloadTime: 60, startTime: 0, endTime: 100, startOffset: 0, depth: 0, contribution: 0.25 },
+            { url: 'style.css', duration: 100, transferSize: 1000, resourceType: 'stylesheet', latency: 20, downloadTime: 80, startTime: 100, endTime: 200, startOffset: 100, depth: 1, contribution: 0.25 },
+            { url: 'script.js', duration: 100, transferSize: 1000, resourceType: 'script', latency: 20, downloadTime: 80, startTime: 200, endTime: 300, startOffset: 200, depth: 2, contribution: 0.25 },
+            { url: 'image.png', duration: 100, transferSize: 1000, resourceType: 'image', latency: 10, downloadTime: 90, startTime: 300, endTime: 400, startOffset: 300, depth: 3, contribution: 0.25 },
+          ],
+        },
+        totalDuration: 400,
+        totalTransferSize: 4000,
+        bottleneck: null,
+        lcp: null,
       };
 
       vi.spyOn(l1GetReport, 'executeL1GetReport').mockResolvedValue({
@@ -211,14 +286,58 @@ describe('L2 Critical Chain Tool', () => {
     });
 
     it('should not recommend chain depth reduction for short chains', async () => {
+      const shortNodes = [
+        {
+          url: 'index.html',
+          duration: 300,
+          transferSize: 25000,
+          resourceType: 'document',
+          latency: 120,
+          downloadTime: 180,
+          startTime: 0,
+          endTime: 300,
+          startOffset: 0,
+          depth: 0,
+          contribution: 0.6,
+        },
+        {
+          url: 'style.css',
+          duration: 200,
+          transferSize: 25000,
+          resourceType: 'stylesheet',
+          latency: 80,
+          downloadTime: 120,
+          startTime: 300,
+          endTime: 500,
+          startOffset: 300,
+          depth: 1,
+          contribution: 0.4,
+        },
+      ];
+
       const shortChain = {
+        chains: [
+          {
+            id: 'short',
+            startTime: 0,
+            endTime: 500,
+            totalDuration: 500,
+            totalTransferSize: 50000,
+            nodes: shortNodes,
+          },
+        ],
+        longestChain: {
+          id: 'short',
+          startTime: 0,
+          endTime: 500,
+          totalDuration: 500,
+          totalTransferSize: 50000,
+          nodes: shortNodes,
+        },
         totalDuration: 500,
         totalTransferSize: 50000,
-        longestChain: [
-          { url: 'index.html', duration: 300, transferSize: 25000, resourceType: 'document' },
-          { url: 'style.css', duration: 200, transferSize: 25000, resourceType: 'stylesheet' },
-        ],
         bottleneck: null,
+        lcp: null,
       };
 
       vi.spyOn(l1GetReport, 'executeL1GetReport').mockResolvedValue({
@@ -240,6 +359,7 @@ describe('L2 Critical Chain Tool', () => {
 
       expect(result.criticalChain.recommendations).not.toContain('Reduce chain depth');
       expect(result.criticalChain.recommendations).not.toContain('Reduce critical chain duration');
+      expect(result.criticalChain.recommendations).toContain('Critical request chain is within healthy thresholds');
     });
 
     it('should assign correct depth values to chains', async () => {

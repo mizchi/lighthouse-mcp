@@ -7,6 +7,7 @@ import { executeL1GetReport } from './l1-get-report.js';
 import { executeL1Collect } from './l1-collect-single.js';
 import { analyzeCriticalChains } from '../analyzers/criticalChain.js';
 import type { LighthouseReport } from '../types/index.js';
+import type { ChainBottleneck, LcpInsight } from '../analyzers/criticalChain.js';
 
 export interface L2CriticalChainParams {
   reportId?: string;
@@ -29,7 +30,15 @@ export interface L2CriticalChainResult {
       depth: number;
       transferSize: number;
       isRenderBlocking: boolean;
+      latency: number;
+      downloadTime: number;
+      contribution: number;
+      startOffset: number;
     }>;
+    bottleneck?: ChainBottleneck;
+    lcp?: Pick<LcpInsight, 'timestamp' | 'candidateUrl' | 'durationToLcp' | 'bottleneck'> & {
+      chainLength: number;
+    };
     recommendations: string[];
   };
 }
@@ -104,29 +113,80 @@ export async function executeL2CriticalChain(params: L2CriticalChainParams): Pro
     };
   }
 
-  // Format the result to match expected interface
+  const longestChainNodes = chainAnalysis.longestChain.nodes;
+
   const formattedResult: L2CriticalChainResult = {
     reportId: reportId!,
     criticalChain: {
       longestChain: {
-        duration: chainAnalysis.totalDuration,
-        length: chainAnalysis.longestChain.length,
+        duration: Math.round(chainAnalysis.totalDuration),
+        length: longestChainNodes.length,
         transferSize: chainAnalysis.totalTransferSize,
       },
-      chains: chainAnalysis.longestChain.map((c, index) => ({
-        url: c.url,
-        duration: c.duration,
+      chains: longestChainNodes.map((node, index) => ({
+        url: node.url,
+        duration: node.duration,
         depth: index,
-        transferSize: c.transferSize,
-        isRenderBlocking: c.resourceType === 'document' || c.resourceType === 'stylesheet',
+        transferSize: node.transferSize,
+        isRenderBlocking: node.resourceType === 'document' || node.resourceType === 'stylesheet',
+        latency: node.latency,
+        downloadTime: node.downloadTime,
+        contribution: node.contribution,
+        startOffset: node.startOffset,
       })),
-      recommendations: [
-        chainAnalysis.bottleneck ? `Optimize ${chainAnalysis.bottleneck.url}: ${chainAnalysis.bottleneck.impact}` : '',
-        chainAnalysis.totalDuration > 1000 ? 'Reduce critical chain duration' : '',
-        chainAnalysis.longestChain.length > 3 ? 'Reduce chain depth' : '',
-      ].filter(Boolean),
+      bottleneck: chainAnalysis.bottleneck,
+      lcp: chainAnalysis.lcp
+        ? {
+            timestamp: chainAnalysis.lcp.timestamp,
+            candidateUrl: chainAnalysis.lcp.candidateUrl,
+            durationToLcp: chainAnalysis.lcp.durationToLcp,
+            bottleneck: chainAnalysis.lcp.bottleneck,
+            chainLength: chainAnalysis.lcp.nodes.length,
+          }
+        : undefined,
+      recommendations: buildRecommendations(chainAnalysis),
     },
   };
 
   return formattedResult;
+}
+
+function buildRecommendations(analysis: NonNullable<ReturnType<typeof analyzeCriticalChains>>): string[] {
+  const recommendations: string[] = [];
+
+  if (analysis.lcp?.bottleneck) {
+    const pct = (analysis.lcp.bottleneck.contribution * 100).toFixed(1);
+    recommendations.push(
+      `Investigate ${analysis.lcp.bottleneck.url}: responsible for ${pct}% of time to LCP`
+    );
+  } else if (analysis.bottleneck) {
+    const pct = (analysis.bottleneck.contribution * 100).toFixed(1);
+    recommendations.push(
+      `Optimize ${analysis.bottleneck.url}: controls ${pct}% of critical chain time`
+    );
+  }
+
+  if (analysis.totalDuration > 1500) {
+    recommendations.push(
+      `Reduce critical chain duration (current ${Math.round(analysis.totalDuration)}ms)`
+    );
+  }
+
+  if (analysis.longestChain.nodes.length > 3) {
+    recommendations.push(
+      `Reduce chain depth (currently ${analysis.longestChain.nodes.length} requests)`
+    );
+  }
+
+  if (analysis.totalTransferSize > 200 * 1024) {
+    recommendations.push(
+      `Trim critical payload (~${Math.round(analysis.totalTransferSize / 1024)}KB before render)`
+    );
+  }
+
+  if (recommendations.length === 0) {
+    recommendations.push('Critical request chain is within healthy thresholds');
+  }
+
+  return recommendations;
 }
