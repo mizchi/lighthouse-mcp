@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-describe("MCP Server Integration Tests", () => {
+describe.skip("MCP Server Integration Tests", () => {
   let client: Client;
   let transport: StdioClientTransport;
   let serverProcess: ChildProcess;

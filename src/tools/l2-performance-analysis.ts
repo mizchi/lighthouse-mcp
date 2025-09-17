@@ -35,6 +35,8 @@ export interface L2PerformanceAnalysisResult {
     category: string;
     severity: string;
     impact: number;
+    weightShare: number;
+    scorePenalty: number;
     description: string;
   }>;
   patterns: Array<{
@@ -114,6 +116,7 @@ export async function executeL2PerformanceAnalysis(params: L2PerformanceAnalysis
 
   // Detect problems
   const problems = detectProblems(report);
+  const roundTo2 = (value: number) => Math.round(value * 100) / 100;
 
   // Detect patterns
   const patterns = detectPatterns(report);
@@ -145,7 +148,9 @@ export async function executeL2PerformanceAnalysis(params: L2PerformanceAnalysis
       id: p.id,
       category: p.category,
       severity: p.severity,
-      impact: p.impact,
+      impact: roundTo2(p.impact),
+      weightShare: roundTo2((p.weight ?? 0) * 100),
+      scorePenalty: roundTo2(p.weightedImpact ?? 0),
       description: p.description,
     })),
     patterns,

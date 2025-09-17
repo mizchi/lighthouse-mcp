@@ -206,10 +206,10 @@ export function compareThirdPartyImpact(
   // Calculate impact
   const impact = {
     scoreDelta: baselineMetrics.score - withThirdPartyMetrics.score,
-    fcpDelta: withThirdPartyMetrics.fcp - baselineMetrics.fcp,
-    lcpDelta: withThirdPartyMetrics.lcp - baselineMetrics.lcp,
-    tbtDelta: withThirdPartyMetrics.tbt - baselineMetrics.tbt,
-    clsDelta: withThirdPartyMetrics.cls - baselineMetrics.cls,
+    fcpDelta: baselineMetrics.fcp - withThirdPartyMetrics.fcp,
+    lcpDelta: baselineMetrics.lcp - withThirdPartyMetrics.lcp,
+    tbtDelta: baselineMetrics.tbt - withThirdPartyMetrics.tbt,
+    clsDelta: baselineMetrics.cls - withThirdPartyMetrics.cls,
   };
 
   // Generate recommendations based on impact
@@ -221,27 +221,27 @@ export function compareThirdPartyImpact(
     );
   }
 
-  if (impact.fcpDelta > 500) {
+  if (impact.fcpDelta < -500) {
     recommendations.push(
-      `FCP delayed by ${Math.round(impact.fcpDelta)}ms due to third-party scripts`
+      `FCP delayed by ${Math.round(Math.abs(impact.fcpDelta))}ms due to third-party scripts`
     );
   }
 
-  if (impact.lcpDelta > 1000) {
+  if (impact.lcpDelta < -1000) {
     recommendations.push(
-      `LCP delayed by ${Math.round(impact.lcpDelta)}ms due to third-party scripts`
+      `LCP delayed by ${Math.round(Math.abs(impact.lcpDelta))}ms due to third-party scripts`
     );
   }
 
-  if (impact.tbtDelta > 300) {
+  if (impact.tbtDelta < -300) {
     recommendations.push(
-      `TBT increased by ${Math.round(impact.tbtDelta)}ms due to third-party scripts`
+      `TBT increased by ${Math.round(Math.abs(impact.tbtDelta))}ms due to third-party scripts`
     );
   }
 
-  if (impact.clsDelta > 0.05) {
+  if (impact.clsDelta < -0.05) {
     recommendations.push(
-      `CLS increased by ${impact.clsDelta.toFixed(3)} due to third-party scripts`
+      `CLS increased by ${Math.abs(impact.clsDelta).toFixed(3)} due to third-party scripts`
     );
   }
 

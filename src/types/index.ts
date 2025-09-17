@@ -46,6 +46,8 @@ export interface Problem {
   category: string;
   severity: "critical" | "high" | "medium" | "low";
   impact: number;
+  weight?: number;
+  weightedImpact?: number;
   description: string;
   audit?: AuditResult;
 }

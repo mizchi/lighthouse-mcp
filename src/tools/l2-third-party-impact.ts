@@ -402,6 +402,7 @@ export async function executeL2ProgressiveThirdParty(
     const scoreDelta = iterationMetrics.score - baselineMetrics.score;
 
     iterations.push({
+      iteration: i,
       blockedDomains: [...blockedDomains],
       score: iterationMetrics.score,
       scoreDelta,
@@ -451,6 +452,21 @@ export async function executeL2ProgressiveThirdParty(
     }
   }
 
+  const summaryParts: string[] = [];
+  summaryParts.push(`Baseline performance score ${(baselineMetrics.score * 100).toFixed(0)} points`);
+
+  if (iterations.length === 0) {
+    summaryParts.push('No significant third-party impact detected.');
+  } else if (totalImprovement > 0.05 && optimalBlocking.length > 0) {
+    summaryParts.push(
+      `Blocking ${optimalBlocking.length} domain${optimalBlocking.length === 1 ? '' : 's'} improved the score by ${Math.round(totalImprovement * 100)} points.`
+    );
+  } else {
+    summaryParts.push('Blocking the analyzed domains did not produce a measurable improvement.');
+  }
+
+  const summary = summaryParts.join(' ');
+
   return {
     baseline: {
       score: baselineMetrics.score,
@@ -459,5 +475,6 @@ export async function executeL2ProgressiveThirdParty(
     iterations,
     optimalBlocking,
     recommendations,
+    summary,
   };
 }

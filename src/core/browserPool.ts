@@ -61,6 +61,7 @@ export class BrowserPool {
       mkdirSync(userDataDir, { recursive: true });
       this.userDataDirs.add(userDataDir);
 
+      // WSL環境向けの追加設定
       const browser = await puppeteer.launch({
         headless: true,
         userDataDir: userDataDir,
@@ -71,8 +72,21 @@ export class BrowserPool {
           '--disable-gpu',
           '--no-first-run',
           '--disable-extensions',
+          '--disable-breakpad',
+          '--disable-crash-reporter',
           `--user-data-dir=${userDataDir}`,
+          // WSL環境向け追加設定
+          '--disable-features=TranslateUI',
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding',
+          '--disable-features=site-per-process',
+          '--force-color-profile=srgb',
+          '--metrics-recording-only',
         ],
+        // WSL環境向けタイムアウト設定
+        timeout: 60000,
+        protocolTimeout: 60000,
       });
       this.browsers.push(browser);
       return browser;

@@ -21,7 +21,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc --watch",
-    "test": "vitest",
+    "test": "vitest run",
     "test:e2e": "vitest run test/e2e",
     "test:unit": "vitest run src",
     "test:integration": "vitest run test/integration",

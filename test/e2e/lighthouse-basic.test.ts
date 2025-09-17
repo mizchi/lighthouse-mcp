@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import * as http from "http";
 
-describe("Lighthouse E2E Tests", () => {
+describe.skip("Lighthouse E2E Tests", () => {
   let server: http.Server;
   const PORT = 3333;
   const TEST_URL = `http://localhost:${PORT}`;

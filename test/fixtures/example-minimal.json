@@ -1,0 +1,26 @@
+{
+  "requestedUrl": "https://example.com",
+  "finalUrl": "https://example.com",
+  "fetchTime": "2025-01-01T00:10:00.000Z",
+  "categories": {
+    "performance": { "score": 0.92 }
+  },
+  "audits": {
+    "first-contentful-paint": { "numericValue": 1100 },
+    "largest-contentful-paint": { "numericValue": 1400 },
+    "total-blocking-time": { "numericValue": 40 },
+    "cumulative-layout-shift": { "numericValue": 0.01 },
+    "interactive": { "numericValue": 1800 },
+    "speed-index": { "numericValue": 1500 },
+    "third-party-summary": {
+      "details": {
+        "items": []
+      }
+    },
+    "third-party-facades": {
+      "details": {
+        "items": []
+      }
+    }
+  }
+}

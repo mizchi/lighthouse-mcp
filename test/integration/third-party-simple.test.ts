@@ -1,9 +1,20 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { setupThirdPartyFixtures } from '../helpers/third-party-fixture.js';
 import { executeL2ThirdPartyImpact } from '../../src/tools/l2-third-party-impact.js';
 
 describe('L2 Third-Party Impact - Simple Tests', () => {
   const TEST_URL = 'https://www.goal.com';
   const TIMEOUT = 60000; // 1 minute
+
+  let restoreFixtures: (() => void) | undefined;
+
+  beforeAll(() => {
+    restoreFixtures = setupThirdPartyFixtures();
+  });
+
+  afterAll(() => {
+    restoreFixtures?.();
+  });
 
   it('should analyze third-party impact and provide recommendations', async () => {
     // Step 1: Analyze third-party scripts

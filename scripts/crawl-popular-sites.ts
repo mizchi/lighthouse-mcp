@@ -4,11 +4,11 @@
  * 有名なサイトをクロールしてLighthouseスコアが悪いページを特定
  * 
  * 使用方法:
- * npx tsx crawl-popular-sites.ts
+ * pnpm tsx scripts/crawl-popular-sites.ts
  */
 
-import { executeL1BatchCollect } from './dist/tools/l1-collect-batch.js';
-import { LighthouseDatabase } from './dist/core/database.js';
+import { executeL1BatchCollect } from '../dist/tools/l1-collect-batch.js';
+import { LighthouseDatabase } from '../dist/core/database.js';
 import { writeFileSync } from 'fs';
 
 // 有名サイトのURL一覧（各カテゴリから選定）

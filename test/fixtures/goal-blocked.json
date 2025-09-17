@@ -1,0 +1,43 @@
+{
+  "requestedUrl": "https://www.goal.com",
+  "finalUrl": "https://www.goal.com",
+  "fetchTime": "2025-01-01T00:05:00.000Z",
+  "categories": {
+    "performance": { "score": 0.68 }
+  },
+  "audits": {
+    "first-contentful-paint": { "numericValue": 2100 },
+    "largest-contentful-paint": { "numericValue": 2400 },
+    "total-blocking-time": { "numericValue": 230 },
+    "cumulative-layout-shift": { "numericValue": 0.09 },
+    "interactive": { "numericValue": 3600 },
+    "speed-index": { "numericValue": 2700 },
+    "third-party-summary": {
+      "details": {
+        "items": [
+          {
+            "entity": "analytics.example.com",
+            "mainThreadTime": 40,
+            "blockingTime": 30,
+            "transferSize": 20000,
+            "subItems": {
+              "items": [
+                {
+                  "url": "https://analytics.example.com/analytics-lite.js",
+                  "mainThreadTime": 20,
+                  "blockingTime": 15,
+                  "transferSize": 10000
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "third-party-facades": {
+      "details": {
+        "items": []
+      }
+    }
+  }
+}
