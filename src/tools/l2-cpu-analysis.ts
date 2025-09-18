@@ -9,6 +9,7 @@ import { executeL1GetReport } from './l1-get-report';
 export interface CPUAnalysisParams {
   reportId?: string;
   url?: string;
+  report?: LighthouseReport; // Direct report input
 }
 
 export interface CPUBottleneck {
@@ -377,13 +378,16 @@ export async function executeL2CPUAnalysis(
 ): Promise<CPUAnalysisResult> {
   let report: LighthouseReport;
 
-  if (params.reportId) {
+  // Direct report input support
+  if (params.report) {
+    report = params.report;
+  } else if (params.reportId) {
     const result = await executeL1GetReport({ reportId: params.reportId });
     report = result.data;
   } else if (params.url) {
-    throw new Error('Direct URL analysis not implemented. Use reportId instead.');
+    throw new Error('Direct URL analysis not implemented. Use reportId or provide report directly.');
   } else {
-    throw new Error('Either reportId or url is required');
+    throw new Error('Either reportId, url, or report is required');
   }
 
   return analyzeCPUPerformance(report);

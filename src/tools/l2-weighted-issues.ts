@@ -9,8 +9,10 @@ import { executeL1GetReport } from './l1-get-report';
 export interface WeightedIssuesParams {
   reportId?: string;
   url?: string;
+  report?: LighthouseReport; // Direct report input
   topN?: number; // Number of top issues to return
   minWeight?: number; // Minimum weight threshold
+  verbosity?: 'summary' | 'detailed' | 'full'; // Output verbosity level
 }
 
 export interface WeightedIssue {
@@ -252,13 +254,16 @@ export async function executeL2WeightedIssues(
 ): Promise<WeightedIssuesResult> {
   let report: LighthouseReport;
 
-  if (params.reportId) {
+  // Direct report input support
+  if (params.report) {
+    report = params.report;
+  } else if (params.reportId) {
     const result = await executeL1GetReport({ reportId: params.reportId });
     report = result.data;
   } else if (params.url) {
-    throw new Error('Direct URL analysis not implemented. Use reportId instead.');
+    throw new Error('Direct URL analysis not implemented. Use reportId or provide report directly.');
   } else {
-    throw new Error('Either reportId or url is required');
+    throw new Error('Either reportId, url, or report is required');
   }
 
   return analyzeWeightedIssues(report, params);
@@ -297,8 +302,9 @@ export const l2WeightedIssuesTool = {
   },
   execute: async (params: WeightedIssuesParams) => {
     const result = await executeL2WeightedIssues(params);
+    const verbosity = params.verbosity || 'detailed';
 
-    // Format output for MCP
+    // Format output for MCP based on verbosity
     let output = `# Weighted Issues Analysis\n\n`;
 
     output += `## Impact Summary\n`;
@@ -306,38 +312,58 @@ export const l2WeightedIssuesTool = {
     output += `- **Max Possible Impact**: ${result.maxPossibleImpact.toFixed(2)}\n`;
     output += `- **Impact Percentage**: ${result.impactPercentage.toFixed(1)}%\n\n`;
 
-    if (result.topIssues.length > 0) {
-      output += `## 🎯 Top Issues by Weight\n\n`;
-      output += `| Rank | Issue | Score | Weight | Impact | Savings |\n`;
-      output += `|------|-------|-------|--------|---------|----------|\n`;
+    if (verbosity === 'summary') {
+      // Summary mode: Only show top 3 issues and key metrics
+      if (result.topIssues.length > 0) {
+        output += `## 🎯 Top 3 Critical Issues\n`;
+        result.topIssues.slice(0, 3).forEach((issue, index) => {
+          output += `${index + 1}. **${issue.title}** (Impact: ${issue.weightedImpact.toFixed(1)})\n`;
+        });
+        output += `\n`;
+      }
 
-      result.topIssues.forEach((issue, index) => {
-        const savings = issue.metrics?.savings
-          ? `${issue.metrics.savings}${issue.metrics.savingsUnit === 'bytes' ? 'B' : 'ms'}`
-          : '-';
-        const title = issue.title.length > 40 ? issue.title.substring(0, 40) + '...' : issue.title;
-        output += `| ${index + 1} | ${title} | ${issue.score.toFixed(2)} | ${issue.weight} | ${issue.weightedImpact.toFixed(2)} | ${savings} |\n`;
+      output += `## 💡 Key Recommendations\n`;
+      result.recommendations.slice(0, 3).forEach(rec => {
+        output += `- ${rec}\n`;
       });
-      output += `\n`;
+    } else if (verbosity === 'detailed' || verbosity === 'full') {
+      // Detailed mode: Show table and top issues
+      if (result.topIssues.length > 0) {
+        output += `## 🎯 Top Issues by Weight\n\n`;
+        output += `| Rank | Issue | Score | Weight | Impact | Savings |\n`;
+        output += `|------|-------|-------|--------|---------|----------|\n`;
 
-      // Detailed breakdown of top 3 issues
-      output += `## 📊 Top 3 Issues Details\n`;
-      result.topIssues.slice(0, 3).forEach((issue, index) => {
-        output += `\n### ${index + 1}. ${issue.title}\n`;
-        output += `- **Audit ID**: \`${issue.auditId}\`\n`;
-        output += `- **Category**: ${issue.category}\n`;
-        output += `- **Score**: ${issue.score.toFixed(2)} (weight: ${issue.weight})\n`;
-        output += `- **Weighted Impact**: ${issue.weightedImpact.toFixed(2)}\n`;
-        if (issue.description) {
-          output += `- **Description**: ${issue.description}\n`;
+        const issuesToShow = verbosity === 'full' ? result.topIssues : result.topIssues.slice(0, 10);
+        issuesToShow.forEach((issue, index) => {
+          const savings = issue.metrics?.savings
+            ? `${issue.metrics.savings}${issue.metrics.savingsUnit === 'bytes' ? 'B' : 'ms'}`
+            : '-';
+          const title = issue.title.length > 40 ? issue.title.substring(0, 40) + '...' : issue.title;
+          output += `| ${index + 1} | ${title} | ${issue.score.toFixed(2)} | ${issue.weight} | ${issue.weightedImpact.toFixed(2)} | ${savings} |\n`;
+        });
+        output += `\n`;
+
+        if (verbosity === 'full') {
+          // Full mode: Include detailed breakdown
+          output += `## 📊 Detailed Issues Analysis\n`;
+          result.topIssues.slice(0, 5).forEach((issue, index) => {
+            output += `\n### ${index + 1}. ${issue.title}\n`;
+            output += `- **Audit ID**: \`${issue.auditId}\`\n`;
+            output += `- **Category**: ${issue.category}\n`;
+            output += `- **Score**: ${issue.score.toFixed(2)} (weight: ${issue.weight})\n`;
+            output += `- **Weighted Impact**: ${issue.weightedImpact.toFixed(2)}\n`;
+            if (issue.description) {
+              output += `- **Description**: ${issue.description}\n`;
+            }
+            if (issue.metrics?.value !== undefined) {
+              output += `- **Current Value**: ${issue.metrics.value}${issue.metrics.unit}\n`;
+            }
+            if (issue.metrics?.savings) {
+              output += `- **Potential Savings**: ${issue.metrics.savings}${issue.metrics.savingsUnit}\n`;
+            }
+          });
         }
-        if (issue.metrics?.value !== undefined) {
-          output += `- **Current Value**: ${issue.metrics.value}${issue.metrics.unit}\n`;
-        }
-        if (issue.metrics?.savings) {
-          output += `- **Potential Savings**: ${issue.metrics.savings}${issue.metrics.savingsUnit}\n`;
-        }
-      });
+      }
     }
 
     output += `\n## 📈 Category Breakdown\n`;

@@ -23,6 +23,7 @@ export interface Issue {
 export interface ComprehensiveIssuesParams {
   reportId?: string;
   url?: string;
+  report?: LighthouseReport; // Direct report input
   thresholds?: {
     critical?: number;
     high?: number;
@@ -759,13 +760,16 @@ export async function executeL2ComprehensiveIssues(
 ): Promise<ComprehensiveIssuesResult> {
   let report: LighthouseReport;
 
-  if (params.reportId) {
+  // Direct report input support
+  if (params.report) {
+    report = params.report;
+  } else if (params.reportId) {
     const result = await executeL1GetReport({ reportId: params.reportId });
     report = result.data;
   } else if (params.url) {
-    throw new Error('Direct URL analysis not implemented. Use reportId instead.');
+    throw new Error('Direct URL analysis not implemented. Use reportId or provide report directly.');
   } else {
-    throw new Error('Either reportId or url is required');
+    throw new Error('Either reportId, url, or report is required');
   }
 
   return analyzeComprehensiveIssues(report);

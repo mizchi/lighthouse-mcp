@@ -164,6 +164,17 @@ export {
   l3PerformanceBudgetTool,
   executeL3PerformanceBudget,
 } from './l3-performance-budget.js';
+
+export {
+  l3UnifiedAnalysisTool,
+  executeL3UnifiedAnalysis,
+} from './l3-unified-analysis.js';
+export type {
+  UnifiedAnalysisParams,
+  UnifiedAnalysisResult,
+  UnifiedIssue,
+  ActionItem,
+} from './l3-unified-analysis.js';
 export type {
   L3PerformanceBudgetParams,
   BudgetAnalysisResult,

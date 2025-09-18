@@ -11,6 +11,7 @@ import type { LighthouseReport } from '../types/index.js';
 export interface L2UnusedCodeParams {
   reportId?: string;
   url?: string;
+  report?: LighthouseReport; // Direct report input
   device?: 'mobile' | 'desktop';
   threshold?: number;
 }
@@ -64,8 +65,11 @@ export async function executeL2UnusedCode(params: L2UnusedCodeParams): Promise<L
   let reportId = params.reportId;
   let report: LighthouseReport;
 
-  // Get report data
-  if (reportId) {
+  // Direct report input support
+  if (params.report) {
+    report = params.report;
+    reportId = 'direct-input';
+  } else if (reportId) {
     const result = await executeL1GetReport({ reportId });
     report = result.data;
   } else if (params.url) {
@@ -76,11 +80,11 @@ export async function executeL2UnusedCode(params: L2UnusedCodeParams): Promise<L
       gather: false,
     });
     reportId = collectResult.reportId;
-    
+
     const result = await executeL1GetReport({ reportId });
     report = result.data;
   } else {
-    throw new Error('Either reportId or url is required');
+    throw new Error('Either reportId, url, or report is required');
   }
 
   // Analyze unused code
