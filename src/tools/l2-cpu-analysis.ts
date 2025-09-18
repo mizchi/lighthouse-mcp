@@ -12,7 +12,7 @@ export interface CPUAnalysisParams {
 }
 
 export interface CPUBottleneck {
-  type: 'script-evaluation' | 'main-thread-blocking' | 'long-task' | 'third-party-script' | 'layout-thrashing' | 'forced-reflow';
+  type: 'script-evaluation' | 'main-thread-blocking' | 'long-task' | 'third-party-script' | 'layout-thrashing' | 'forced-reflow' | 'style-calculation' | 'render-blocking-css';
   resource?: string;
   duration: number;
   impact: 'critical' | 'high' | 'medium' | 'low';
@@ -25,7 +25,9 @@ export interface CPUAnalysisResult {
     totalBlockingTime: number;
     mainThreadBusyTime: number;
     scriptEvaluationTime: number;
+    styleTime: number;
     layoutTime: number;
+    renderTime: number;
     cpuScore: number; // 0-100, lower is worse
     severity: 'critical' | 'high' | 'medium' | 'low';
   };
@@ -118,7 +120,9 @@ export function analyzeCPUPerformance(report: LighthouseReport): CPUAnalysisResu
   // Analyze main thread work breakdown
   let mainThreadBusyTime = 0;
   let scriptEvaluationTime = 0;
+  let styleTime = 0;
   let layoutTime = 0;
+  let renderTime = 0;
   const workBreakdown: Record<string, number> = {};
 
   if (mainThreadWork?.details?.items) {
@@ -148,6 +152,29 @@ export function analyzeCPUPerformance(report: LighthouseReport): CPUAnalysisResu
             impact: 'high',
             description: `Layout recalculations taking ${item.duration}ms`,
             solution: 'Batch DOM reads/writes and avoid forced synchronous layouts'
+          });
+        }
+      } else if (item.group === 'style' || item.group === 'parseHTML') {
+        // CSS評価とスタイル計算
+        styleTime += item.duration;
+        if (item.duration > 1000) {
+          bottlenecks.push({
+            type: 'style-calculation',
+            duration: item.duration,
+            impact: item.duration > 2000 ? 'critical' : 'high',
+            description: `CSS style calculation consuming ${(item.duration / 1000).toFixed(1)}s of CPU time`,
+            solution: 'Simplify CSS selectors, reduce CSS complexity, and remove unused styles'
+          });
+        }
+      } else if (item.group === 'rendering' || item.group === 'painting') {
+        renderTime += item.duration;
+        if (item.duration > 500) {
+          bottlenecks.push({
+            type: 'render-blocking-css',
+            duration: item.duration,
+            impact: 'high',
+            description: `Rendering/painting operations taking ${item.duration}ms`,
+            solution: 'Optimize CSS performance, use will-change sparingly, reduce paint areas'
           });
         }
       }
@@ -196,11 +223,61 @@ export function analyzeCPUPerformance(report: LighthouseReport): CPUAnalysisResu
     }
   }
 
+  // Check for render-blocking CSS
+  const renderBlockingResources = report.audits?.['render-blocking-resources'];
+  if (renderBlockingResources?.details?.items) {
+    const items = renderBlockingResources.details.items as any[];
+    const cssItems = items.filter((item: any) => item.url?.endsWith('.css') || item.url?.includes('css'));
+
+    for (const item of cssItems) {
+      const wastedMs = item.wastedMs || 0;
+      if (wastedMs > 100) {
+        bottlenecks.push({
+          type: 'render-blocking-css',
+          resource: item.url,
+          duration: wastedMs,
+          impact: wastedMs > 500 ? 'critical' : 'high',
+          description: `Render-blocking CSS ${item.url} delays rendering by ${wastedMs}ms`,
+          solution: 'Inline critical CSS, defer non-critical styles, or use media queries'
+        });
+      }
+    }
+  }
+
+  // Check for unused CSS impacting performance
+  const unusedCSS = report.audits?.['unused-css-rules'];
+  if (unusedCSS?.details?.items) {
+    const items = unusedCSS.details.items as any[];
+    let totalUnusedCSS = 0;
+
+    for (const item of items) {
+      if (item.wastedBytes > 10000) {
+        totalUnusedCSS += item.wastedBytes;
+      }
+    }
+
+    if (totalUnusedCSS > 50000) {
+      // Large amount of unused CSS can cause style calculation bottlenecks
+      bottlenecks.push({
+        type: 'style-calculation',
+        duration: Math.round(totalUnusedCSS / 100), // Estimate impact
+        impact: totalUnusedCSS > 200000 ? 'critical' : 'high',
+        description: `${(totalUnusedCSS / 1024).toFixed(1)}KB of unused CSS causing style calculation overhead`,
+        solution: 'Remove unused CSS with PurgeCSS or similar tools to reduce parsing and evaluation time'
+      });
+
+      // Add to styleTime estimation
+      styleTime += Math.round(totalUnusedCSS / 100);
+    }
+  }
+
   // Calculate CPU score (0-100)
   let cpuScore = 100;
-  cpuScore -= Math.min(50, (tbt / 600) * 50); // TBT impact
-  cpuScore -= Math.min(30, (scriptEvaluationTime / 4000) * 30); // Script evaluation impact
-  cpuScore -= Math.min(20, (mainThreadBusyTime / 10000) * 20); // Main thread busy time impact
+  cpuScore -= Math.min(40, (tbt / 600) * 40); // TBT impact
+  cpuScore -= Math.min(20, (scriptEvaluationTime / 4000) * 20); // Script evaluation impact
+  cpuScore -= Math.min(20, (styleTime / 3000) * 20); // CSS/Style impact
+  cpuScore -= Math.min(10, (layoutTime / 1000) * 10); // Layout impact
+  cpuScore -= Math.min(10, (mainThreadBusyTime / 10000) * 10); // Main thread busy time impact
   cpuScore = Math.max(0, Math.round(cpuScore));
 
   // Determine severity
@@ -218,6 +295,15 @@ export function analyzeCPUPerformance(report: LighthouseReport): CPUAnalysisResu
     recommendations.push('⚙️ Optimize JavaScript execution for better interactivity');
   }
 
+  if (styleTime > 2000) {
+    recommendations.push('🎨 CRITICAL: Reduce CSS evaluation time by removing unused styles');
+    recommendations.push('✂️ Use PurgeCSS or similar tools to eliminate dead CSS');
+    recommendations.push('🔍 Simplify complex CSS selectors to reduce calculation time');
+    recommendations.push('📋 Split CSS into critical and non-critical paths');
+  } else if (styleTime > 1000) {
+    recommendations.push('🎨 Optimize CSS to reduce style calculation overhead');
+  }
+
   if (tbt > 600) {
     recommendations.push('⚡ Use Web Workers for CPU-intensive operations');
     recommendations.push('🔄 Implement progressive enhancement to improve initial load');
@@ -228,6 +314,11 @@ export function analyzeCPUPerformance(report: LighthouseReport): CPUAnalysisResu
   if (layoutTime > 500) {
     recommendations.push('📐 Optimize CSS to reduce layout recalculations');
     recommendations.push('🎯 Use CSS containment to limit layout scope');
+  }
+
+  if (renderTime > 500) {
+    recommendations.push('🖌️ Reduce paint complexity and paint areas');
+    recommendations.push('⚡ Use CSS transforms instead of layout properties for animations');
   }
 
   const hasThirdPartyIssues = bottlenecks.some(b => b.type === 'third-party-script' && b.impact === 'critical');
@@ -258,7 +349,9 @@ export function analyzeCPUPerformance(report: LighthouseReport): CPUAnalysisResu
       totalBlockingTime: tbt,
       mainThreadBusyTime,
       scriptEvaluationTime,
+      styleTime,
       layoutTime,
+      renderTime,
       cpuScore,
       severity
     },
@@ -328,7 +421,9 @@ export const l2CPUAnalysisTool = {
     output += `- **Total Blocking Time**: ${result.summary.totalBlockingTime}ms\n`;
     output += `- **Main Thread Busy**: ${(result.summary.mainThreadBusyTime / 1000).toFixed(1)}s\n`;
     output += `- **Script Evaluation**: ${(result.summary.scriptEvaluationTime / 1000).toFixed(1)}s\n`;
-    output += `- **Layout Time**: ${result.summary.layoutTime}ms\n\n`;
+    output += `- **CSS/Style Time**: ${(result.summary.styleTime / 1000).toFixed(1)}s\n`;
+    output += `- **Layout Time**: ${result.summary.layoutTime}ms\n`;
+    output += `- **Render Time**: ${result.summary.renderTime}ms\n\n`;
 
     if (result.bottlenecks.length > 0) {
       output += `## 🚨 CPU Bottlenecks\n`;

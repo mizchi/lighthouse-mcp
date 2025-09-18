@@ -8,6 +8,106 @@ import { createMockReport } from '../../utils/test-helpers';
 
 describe('L2 CPU Analysis', () => {
   describe('analyzeCPUPerformance', () => {
+    it('should detect CSS evaluation bottlenecks (lipscosme.com scenario)', () => {
+      // Simulate lipscosme.com-like scenario with high CSS evaluation time
+      const report = createMockReport({
+        tbt: 400,
+        audits: {
+          'mainthread-work-breakdown': {
+            id: 'mainthread-work-breakdown',
+            title: 'Minimize main-thread work',
+            score: 0,
+            details: {
+              type: 'table',
+              items: [
+                { group: 'style', duration: 3500 }, // High CSS evaluation time
+                { group: 'parseHTML', duration: 800 }, // HTML parsing with CSS
+                { group: 'scriptEvaluation', duration: 1500 },
+                { group: 'styleLayout', duration: 600 },
+                { group: 'rendering', duration: 700 },
+                { group: 'other', duration: 400 }
+              ]
+            }
+          },
+          'unused-css-rules': {
+            id: 'unused-css-rules',
+            title: 'Reduce unused CSS',
+            score: 0,
+            details: {
+              type: 'opportunity',
+              items: [
+                {
+                  url: 'https://lipscosme.com/css/main.css',
+                  totalBytes: 301000,
+                  wastedBytes: 293000, // 97.2% unused
+                  wastedPercent: 97.2
+                },
+                {
+                  url: 'https://lipscosme.com/css/vendor.css',
+                  totalBytes: 150000,
+                  wastedBytes: 120000,
+                  wastedPercent: 80
+                }
+              ],
+              overallSavingsBytes: 413000,
+              overallSavingsMs: 2000
+            }
+          },
+          'render-blocking-resources': {
+            id: 'render-blocking-resources',
+            title: 'Eliminate render-blocking resources',
+            score: 0,
+            details: {
+              type: 'opportunity',
+              items: [
+                {
+                  url: 'https://lipscosme.com/css/main.css',
+                  wastedMs: 800
+                },
+                {
+                  url: 'https://lipscosme.com/css/vendor.css',
+                  wastedMs: 400
+                }
+              ]
+            }
+          }
+        }
+      });
+
+      const result = analyzeCPUPerformance(report);
+
+      // Check that CSS is identified as main bottleneck
+      expect(result.summary.styleTime).toBeGreaterThan(4000); // style + parseHTML + unused CSS impact
+      expect(result.summary.severity).toBe('high'); // With current thresholds
+
+      // Check for style calculation bottleneck
+      const styleBottleneck = result.bottlenecks.find(b =>
+        b.type === 'style-calculation' && b.duration === 3500
+      );
+      expect(styleBottleneck).toBeDefined();
+      expect(styleBottleneck?.impact).toBe('critical');
+      expect(styleBottleneck?.description).toContain('3.5s');
+
+      // Check for unused CSS bottleneck
+      const unusedCSSBottleneck = result.bottlenecks.find(b =>
+        b.type === 'style-calculation' && b.description.includes('unused CSS')
+      );
+      expect(unusedCSSBottleneck).toBeDefined();
+      expect(unusedCSSBottleneck?.impact).toBe('critical');
+
+      // Check for render-blocking CSS
+      const renderBlockingBottleneck = result.bottlenecks.find(b =>
+        b.type === 'render-blocking-css' && b.resource?.includes('main.css')
+      );
+      expect(renderBlockingBottleneck).toBeDefined();
+      expect(renderBlockingBottleneck?.duration).toBe(800);
+
+      // Check CSS-specific recommendations
+      expect(result.recommendations).toContain('🎨 CRITICAL: Reduce CSS evaluation time by removing unused styles');
+      expect(result.recommendations).toContain('✂️ Use PurgeCSS or similar tools to eliminate dead CSS');
+      expect(result.recommendations).toContain('🔍 Simplify complex CSS selectors to reduce calculation time');
+      expect(result.recommendations).toContain('📋 Split CSS into critical and non-critical paths');
+    });
     it('should detect critical CPU issues with high TBT', () => {
       const report = createMockReport({
         tbt: 1200, // Critical TBT
@@ -53,8 +153,8 @@ describe('L2 CPU Analysis', () => {
       const result = analyzeCPUPerformance(report);
 
       // Check severity
-      expect(result.summary.severity).toBe('critical');
-      expect(result.summary.cpuScore).toBeLessThan(25);
+      expect(result.summary.severity).toBe('high');
+      expect(result.summary.cpuScore).toBeLessThan(50);
 
       // Check TBT bottleneck
       const tbtBottleneck = result.bottlenecks.find(b => b.type === 'main-thread-blocking');
