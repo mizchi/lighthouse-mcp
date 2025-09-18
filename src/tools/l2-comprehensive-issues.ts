@@ -1,5 +1,5 @@
 import type { LighthouseReport } from '../types';
-import { executeL1GetReport } from './l1-get-report';
+import { loadReport } from './utils/report-loader.js';
 
 export interface Issue {
   category: 'performance' | 'accessibility' | 'seo' | 'best-practices' | 'pwa';
@@ -758,19 +758,15 @@ export function analyzeComprehensiveIssues(report: LighthouseReport): Comprehens
 export async function executeL2ComprehensiveIssues(
   params: ComprehensiveIssuesParams
 ): Promise<ComprehensiveIssuesResult> {
-  let report: LighthouseReport;
-
-  // Direct report input support
-  if (params.report) {
-    report = params.report;
-  } else if (params.reportId) {
-    const result = await executeL1GetReport({ reportId: params.reportId });
-    report = result.data;
-  } else if (params.url) {
-    throw new Error('Direct URL analysis not implemented. Use reportId or provide report directly.');
-  } else {
-    throw new Error('Either reportId, url, or report is required');
-  }
+  // Load report using common utility
+  const { report } = await loadReport({
+    reportId: params.reportId,
+    url: params.url,
+    report: params.report,
+    device: 'mobile',
+    categories: ['performance'],
+    gather: false
+  });
 
   return analyzeComprehensiveIssues(report);
 }

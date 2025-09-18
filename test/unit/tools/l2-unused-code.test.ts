@@ -175,7 +175,7 @@ describe('L2 Unused Code Tool', () => {
 
     it('should throw error when neither reportId nor url provided', async () => {
       await expect(executeL2UnusedCode({})).rejects.toThrow(
-        'Either reportId or url is required'
+        'Either reportId, url, or report is required'
       );
     });
 

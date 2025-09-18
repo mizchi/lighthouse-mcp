@@ -3,9 +3,8 @@
  * Analyzes unused CSS and JavaScript
  */
 
-import { executeL1GetReport } from './l1-get-report.js';
-import { executeL1Collect } from './l1-collect-single.js';
 import { analyzeUnusedCode } from '../analyzers/unusedCode.js';
+import { loadReport } from './utils/report-loader.js';
 import type { LighthouseReport } from '../types/index.js';
 
 export interface L2UnusedCodeParams {
@@ -62,37 +61,22 @@ export const l2UnusedCodeTool = {
 };
 
 export async function executeL2UnusedCode(params: L2UnusedCodeParams): Promise<L2UnusedCodeResult> {
-  let reportId = params.reportId;
-  let report: LighthouseReport;
-
-  // Direct report input support
-  if (params.report) {
-    report = params.report;
-    reportId = 'direct-input';
-  } else if (reportId) {
-    const result = await executeL1GetReport({ reportId });
-    report = result.data;
-  } else if (params.url) {
-    const collectResult = await executeL1Collect({
-      url: params.url,
-      device: params.device || 'mobile',
-      categories: ['performance'],
-      gather: false,
-    });
-    reportId = collectResult.reportId;
-
-    const result = await executeL1GetReport({ reportId });
-    report = result.data;
-  } else {
-    throw new Error('Either reportId, url, or report is required');
-  }
+  // Load report using common utility
+  const { report, reportId } = await loadReport({
+    reportId: params.reportId,
+    url: params.url,
+    report: params.report,
+    device: params.device,
+    categories: ['performance'],
+    gather: false,
+  });
 
   // Analyze unused code
   const unusedCodeAnalysis = analyzeUnusedCode(report);
 
   if (!unusedCodeAnalysis) {
     return {
-      reportId: reportId!,
+      reportId,
       unusedCode: {
         totalWastedBytes: 0,
         totalWastedMs: 0,
@@ -103,7 +87,7 @@ export async function executeL2UnusedCode(params: L2UnusedCodeParams): Promise<L
   }
 
   return {
-    reportId: reportId!,
+    reportId,
     unusedCode: {
       totalWastedBytes: unusedCodeAnalysis.totalWastedBytes,
       totalWastedMs: 0, // Not available in current analysis

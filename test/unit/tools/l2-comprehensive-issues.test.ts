@@ -422,7 +422,7 @@ describe('L2 Comprehensive Issues', () => {
     it('should throw error without reportId or url', async () => {
       await expect(
         executeL2ComprehensiveIssues({})
-      ).rejects.toThrow('Either reportId or url is required');
+      ).rejects.toThrow('Either reportId, url, or report is required');
     });
   });
 
