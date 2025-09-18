@@ -40,6 +40,380 @@ describe('L2 LCP Chain Analysis', () => {
       expect(result.lcpTime).toBeGreaterThan(4000); // Poor LCP
     });
 
+    it('should filter out non-LCP related requests from critical chain', () => {
+      // Create a mock report with mixed critical chains
+      const mixedChainReport = {
+        ...mockReport,
+        audits: {
+          ...mockReport.audits,
+          'critical-request-chains': {
+            ...mockReport.audits['critical-request-chains'],
+            details: {
+              ...mockReport.audits['critical-request-chains'].details,
+              chains: {
+                // LCP-related chain (image)
+                'https://example.com/': {
+                  request: {
+                    url: 'https://example.com/',
+                    startTime: 0,
+                    endTime: 100,
+                    responseReceivedTime: 80,
+                    transferSize: 5000
+                  },
+                  children: {
+                    'https://example.com/hero-image.jpg': {
+                      request: {
+                        url: 'https://example.com/hero-image.jpg',
+                        startTime: 100,
+                        endTime: 2000,
+                        responseReceivedTime: 1800,
+                        transferSize: 500000
+                      }
+                    },
+                    // Non-LCP related chain (analytics)
+                    'https://analytics.example.com/track.js': {
+                      request: {
+                        url: 'https://analytics.example.com/track.js',
+                        startTime: 150,
+                        endTime: 300,
+                        responseReceivedTime: 280,
+                        transferSize: 10000
+                      },
+                      children: {
+                        'https://analytics.example.com/pixel.gif': {
+                          request: {
+                            url: 'https://analytics.example.com/pixel.gif',
+                            startTime: 300,
+                            endTime: 350,
+                            responseReceivedTime: 340,
+                            transferSize: 43
+                          }
+                        }
+                      }
+                    },
+                    // Non-LCP related chain (ads)
+                    'https://ads.example.com/banner.js': {
+                      request: {
+                        url: 'https://ads.example.com/banner.js',
+                        startTime: 200,
+                        endTime: 500,
+                        responseReceivedTime: 450,
+                        transferSize: 25000
+                      },
+                      children: {
+                        'https://ads.example.com/iframe.html': {
+                          request: {
+                            url: 'https://ads.example.com/iframe.html',
+                            startTime: 500,
+                            endTime: 600,
+                            responseReceivedTime: 580,
+                            transferSize: 5000
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                // Completely unrelated chain (social widgets)
+                'https://social.example.com/widget.js': {
+                  request: {
+                    url: 'https://social.example.com/widget.js',
+                    startTime: 1000,
+                    endTime: 1200,
+                    responseReceivedTime: 1150,
+                    transferSize: 15000
+                  },
+                  children: {
+                    'https://social.example.com/likes.json': {
+                      request: {
+                        url: 'https://social.example.com/likes.json',
+                        startTime: 1200,
+                        endTime: 1300,
+                        responseReceivedTime: 1280,
+                        transferSize: 2000
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          'largest-contentful-paint-element': {
+            ...mockReport.audits['largest-contentful-paint-element'],
+            details: {
+              items: [{
+                node: {
+                  type: 'node',
+                  selector: 'img.hero-image',
+                  nodeLabel: 'Hero Image',
+                  snippet: '<img class="hero-image" src="/hero-image.jpg">',
+                  boundingRect: {
+                    top: 0,
+                    bottom: 600,
+                    left: 0,
+                    right: 800,
+                    width: 800,
+                    height: 600
+                  }
+                },
+                url: 'https://example.com/hero-image.jpg',
+                timing: 2000,
+                size: 480000,
+                loadTime: 1900,
+                renderTime: 2000
+              }]
+            }
+          }
+        }
+      };
+
+      const result = analyzeLCPChain(mixedChainReport as any);
+
+      // Should only include chains related to LCP image
+      const lcpRelatedPaths = result.criticalPath.filter(node =>
+        node.url.includes('hero-image') ||
+        node.url === 'https://example.com/' // Parent of LCP resource
+      );
+
+      const nonLCPPaths = result.criticalPath.filter(node =>
+        node.url.includes('analytics') ||
+        node.url.includes('ads') ||
+        node.url.includes('social')
+      );
+
+      // Critical path should contain LCP-related resources
+      expect(lcpRelatedPaths.length).toBeGreaterThan(0);
+
+      // Critical path should NOT contain non-LCP resources
+      expect(nonLCPPaths.length).toBe(0);
+
+      // Verify the chain only includes relevant resources
+      expect(result.criticalPath.every(node =>
+        node.url === 'https://example.com/' ||
+        node.url.includes('hero-image')
+      )).toBe(true);
+    });
+
+    it('should correctly identify LCP when multiple images are present', () => {
+      // Mock report with multiple images but only one is LCP
+      const multiImageReport = {
+        ...mockReport,
+        audits: {
+          ...mockReport.audits,
+          'critical-request-chains': {
+            details: {
+              chains: {
+                'https://example.com/': {
+                  request: {
+                    url: 'https://example.com/',
+                    startTime: 0,
+                    endTime: 100,
+                    responseReceivedTime: 80,
+                    transferSize: 5000
+                  },
+                  children: {
+                    'https://example.com/style.css': {
+                      request: {
+                        url: 'https://example.com/style.css',
+                        startTime: 100,
+                        endTime: 200,
+                        responseReceivedTime: 180,
+                        transferSize: 20000
+                      },
+                      children: {
+                        // Background image in CSS - NOT LCP
+                        'https://example.com/bg-pattern.png': {
+                          request: {
+                            url: 'https://example.com/bg-pattern.png',
+                            startTime: 200,
+                            endTime: 300,
+                            responseReceivedTime: 280,
+                            transferSize: 5000
+                          }
+                        }
+                      }
+                    },
+                    'https://example.com/app.js': {
+                      request: {
+                        url: 'https://example.com/app.js',
+                        startTime: 100,
+                        endTime: 400,
+                        responseReceivedTime: 350,
+                        transferSize: 50000
+                      },
+                      children: {
+                        // Dynamically loaded hero image - THIS IS LCP
+                        'https://cdn.example.com/hero-banner.webp': {
+                          request: {
+                            url: 'https://cdn.example.com/hero-banner.webp',
+                            startTime: 400,
+                            endTime: 3000,
+                            responseReceivedTime: 2800,
+                            transferSize: 800000
+                          }
+                        },
+                        // Icon sprite - NOT LCP
+                        'https://example.com/icons.svg': {
+                          request: {
+                            url: 'https://example.com/icons.svg',
+                            startTime: 400,
+                            endTime: 500,
+                            responseReceivedTime: 480,
+                            transferSize: 10000
+                          }
+                        }
+                      }
+                    },
+                    // Logo image - NOT LCP
+                    'https://example.com/logo.png': {
+                      request: {
+                        url: 'https://example.com/logo.png',
+                        startTime: 100,
+                        endTime: 250,
+                        responseReceivedTime: 230,
+                        transferSize: 3000
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          'largest-contentful-paint-element': {
+            details: {
+              items: [{
+                node: {
+                  type: 'node',
+                  selector: 'section.hero img',
+                  nodeLabel: 'Hero Banner',
+                  snippet: '<img src="https://cdn.example.com/hero-banner.webp">'
+                },
+                url: 'https://cdn.example.com/hero-banner.webp',
+                timing: 3000
+              }]
+            }
+          }
+        }
+      };
+
+      const result = analyzeLCPChain(multiImageReport as any);
+
+      // Should identify the correct LCP element
+      expect(result.lcpElement?.url).toBe('https://cdn.example.com/hero-banner.webp');
+
+      // Critical path should include the JS that loads the LCP image
+      const hasJSInPath = result.criticalPath.some(node =>
+        node.url.includes('app.js')
+      );
+      expect(hasJSInPath).toBe(true);
+
+      // Should NOT include non-LCP images
+      const hasNonLCPImages = result.criticalPath.some(node =>
+        node.url.includes('bg-pattern') ||
+        node.url.includes('logo.png') ||
+        node.url.includes('icons.svg')
+      );
+      expect(hasNonLCPImages).toBe(false);
+
+      // Should include the actual LCP image
+      const hasLCPImage = result.criticalPath.some(node =>
+        node.url.includes('hero-banner.webp')
+      );
+      expect(hasLCPImage).toBe(true);
+    });
+
+    it('should handle LCP text elements correctly (not just images)', () => {
+      // Mock report where LCP is a text element, not an image
+      const textLCPReport = {
+        ...mockReport,
+        audits: {
+          ...mockReport.audits,
+          'critical-request-chains': {
+            details: {
+              chains: {
+                'https://example.com/': {
+                  request: {
+                    url: 'https://example.com/',
+                    startTime: 0,
+                    endTime: 100,
+                    responseReceivedTime: 80,
+                    transferSize: 10000
+                  },
+                  children: {
+                    // Font file that affects LCP text
+                    'https://fonts.example.com/custom-font.woff2': {
+                      request: {
+                        url: 'https://fonts.example.com/custom-font.woff2',
+                        startTime: 100,
+                        endTime: 500,
+                        responseReceivedTime: 450,
+                        transferSize: 50000
+                      }
+                    },
+                    // CSS that styles the LCP text
+                    'https://example.com/typography.css': {
+                      request: {
+                        url: 'https://example.com/typography.css',
+                        startTime: 100,
+                        endTime: 200,
+                        responseReceivedTime: 180,
+                        transferSize: 5000
+                      }
+                    },
+                    // Unrelated image that's not LCP
+                    'https://example.com/footer-logo.png': {
+                      request: {
+                        url: 'https://example.com/footer-logo.png',
+                        startTime: 100,
+                        endTime: 300,
+                        responseReceivedTime: 280,
+                        transferSize: 2000
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          'largest-contentful-paint-element': {
+            details: {
+              items: [{
+                node: {
+                  type: 'node',
+                  selector: 'h1.hero-title',
+                  nodeLabel: 'Welcome to Our Site',
+                  snippet: '<h1 class="hero-title">Welcome to Our Site</h1>'
+                },
+                timing: 500  // Happens after font loads
+              }]
+            }
+          }
+        }
+      };
+
+      const result = analyzeLCPChain(textLCPReport as any);
+
+      // Should identify text element as LCP
+      expect(result.lcpElement?.selector).toBe('h1.hero-title');
+
+      // Critical path should include font and CSS that affect LCP text
+      const hasFontInPath = result.criticalPath.some(node =>
+        node.url.includes('custom-font.woff2')
+      );
+      const hasCSSInPath = result.criticalPath.some(node =>
+        node.url.includes('typography.css')
+      );
+
+      expect(hasFontInPath).toBe(true);
+      expect(hasCSSInPath).toBe(true);
+
+      // Should NOT include unrelated images
+      const hasFooterImage = result.criticalPath.some(node =>
+        node.url.includes('footer-logo')
+      );
+      expect(hasFooterImage).toBe(false);
+    });
+
     it('should build critical path with correct depth', () => {
       const result = analyzeLCPChain(mockReport);
 
