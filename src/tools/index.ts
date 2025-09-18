@@ -149,6 +149,16 @@ export type {
   CPUBottleneck,
 } from './l2-cpu-analysis.js';
 
+export {
+  l2WeightedIssuesTool,
+  executeL2WeightedIssues,
+} from './l2-weighted-issues.js';
+export type {
+  WeightedIssuesParams,
+  WeightedIssuesResult,
+  WeightedIssue,
+} from './l2-weighted-issues.js';
+
 // Layer 3 - Interpretation Tools
 export {
   l3PerformanceBudgetTool,
@@ -193,6 +203,7 @@ export const allTools = async () => {
   const { l2SiteComparisonTool } = await import('./l2-site-comparison.js');
   const { l2ComprehensiveIssuesTool } = await import('./l2-comprehensive-issues.js');
   const { l2CPUAnalysisTool } = await import('./l2-cpu-analysis.js');
+  const { l2WeightedIssuesTool } = await import('./l2-weighted-issues.js');
   const { l3PatternInsightsTool } = await import('./l3-pattern-insights.js');
 
   // Layer 3 tools
@@ -217,6 +228,7 @@ export const allTools = async () => {
     l2SiteComparisonTool,
     l2ComprehensiveIssuesTool,
     l2CPUAnalysisTool,
+    l2WeightedIssuesTool,
     // Layer 3 - Interpretation
     l3DatabaseQueryTool,
     l3PatternInsightsTool,
@@ -290,6 +302,10 @@ export async function executeTool(name: string, params: any): Promise<any> {
     case 'l2_cpu_analysis': {
       const { executeL2CPUAnalysis } = await import('./l2-cpu-analysis.js');
       return executeL2CPUAnalysis(params);
+    }
+    case 'l2_weighted_issues': {
+      const { executeL2WeightedIssues } = await import('./l2-weighted-issues.js');
+      return executeL2WeightedIssues(params);
     }
     // Layer 3 tools
     case 'l3_performance_budget': {
