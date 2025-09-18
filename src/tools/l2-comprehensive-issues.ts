@@ -645,22 +645,43 @@ function generateRecommendations(issues: Issue[], categories: ComprehensiveIssue
   return recommendations;
 }
 
-export async function executeL2ComprehensiveIssues(
-  params: ComprehensiveIssuesParams
-): Promise<ComprehensiveIssuesResult> {
-  let report: LighthouseReport;
+/**
+ * Analyze comprehensive issues from a Lighthouse report
+ * This is the core analysis function that can be used directly in tests
+ */
+// Add Core Web Vitals detection function
+function detectCoreWebVitalsIssues(report: LighthouseReport): Issue[] {
+  const issues: Issue[] = [];
 
-  if (params.reportId) {
-    const result = await executeL1GetReport({ reportId: params.reportId });
-    report = result.data;
-  } else if (params.url) {
-    throw new Error('Direct URL analysis not implemented. Use reportId instead.');
-  } else {
-    throw new Error('Either reportId or url is required');
+  // LCP
+  const lcp = report.audits?.['largest-contentful-paint'];
+  if (lcp?.numericValue && lcp.numericValue > 2500) {
+    issues.push({
+      category: 'performance',
+      type: 'slow-lcp',
+      severity: lcp.numericValue > 4000 ? 'critical' : 'high',
+      title: 'Slow Largest Contentful Paint',
+      description: `LCP is ${(lcp.numericValue / 1000).toFixed(1)}s (target: <2.5s)`,
+      impact: {
+        metric: 'LCP',
+        value: lcp.numericValue,
+        unit: 'ms'
+      },
+      solution: {
+        quick: 'Preload critical resources and optimize images',
+        longTerm: 'Implement progressive enhancement strategy',
+        effort: 'medium'
+      }
+    });
   }
 
+  return issues;
+}
+
+export function analyzeComprehensiveIssues(report: LighthouseReport): ComprehensiveIssuesResult {
   // Detect all issues
   const allIssues: Issue[] = [
+    ...detectCoreWebVitalsIssues(report),
     ...detectCSSIssues(report),
     ...detectJavaScriptIssues(report),
     ...detectImageIssues(report),
@@ -728,6 +749,26 @@ export async function executeL2ComprehensiveIssues(
     quickWins,
     recommendations
   };
+}
+
+/**
+ * Execute comprehensive issues analysis (MCP wrapper)
+ */
+export async function executeL2ComprehensiveIssues(
+  params: ComprehensiveIssuesParams
+): Promise<ComprehensiveIssuesResult> {
+  let report: LighthouseReport;
+
+  if (params.reportId) {
+    const result = await executeL1GetReport({ reportId: params.reportId });
+    report = result.data;
+  } else if (params.url) {
+    throw new Error('Direct URL analysis not implemented. Use reportId instead.');
+  } else {
+    throw new Error('Either reportId or url is required');
+  }
+
+  return analyzeComprehensiveIssues(report);
 }
 
 // MCP Tool definition
