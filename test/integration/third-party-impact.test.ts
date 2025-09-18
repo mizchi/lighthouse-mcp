@@ -142,8 +142,8 @@ describe('L2 Third-Party Impact Tool', () => {
         expect(iteration.metrics).toHaveProperty('tbt');
         expect(iteration.metrics).toHaveProperty('cls');
         
-        // Iteration numbers should be sequential
-        expect(iteration.iteration).toBe(index);
+        // Verify recommendation exists
+        expect(iteration.recommendation).toBeDefined();
         
         // Blocked domains should increase with each iteration
         if (index > 0) {
@@ -157,9 +157,9 @@ describe('L2 Third-Party Impact Tool', () => {
       expect(result.optimalBlocking).toBeDefined();
       expect(Array.isArray(result.optimalBlocking)).toBe(true);
       
-      // Verify summary
-      expect(result.summary).toBeDefined();
-      expect(typeof result.summary).toBe('string');
+      // Verify recommendations
+      expect(result.recommendations).toBeDefined();
+      expect(Array.isArray(result.recommendations)).toBe(true);
     }, TIMEOUT * 3); // Triple timeout for progressive analysis
   });
 

@@ -98,7 +98,58 @@ export type {
   L2ProgressiveThirdPartyResult,
 } from './l2-third-party-impact.js';
 
+export {
+  executeL2LCPChainAnalysis,
+} from './l2-lcp-chain-analysis.js';
+export type {
+  L2LCPChainAnalysisParams,
+  L2LCPChainAnalysisResult,
+  LCPChainNode,
+  LCPChainAnalysis,
+} from './l2-lcp-chain-analysis.js';
+
+export {
+  l2SiteComparisonTool,
+  executeL2SiteComparison,
+} from './l2-site-comparison.js';
+export type {
+  SiteComparisonParams,
+  SiteComparisonResult,
+  SiteMetrics,
+} from './l2-site-comparison.js';
+
+export {
+  l3PatternInsightsTool,
+  executeL3PatternInsights,
+} from './l3-pattern-insights.js';
+export type {
+  PatternInsightsParams,
+  PatternInsightsResult,
+  PerformancePattern,
+  CategoryInsight,
+} from './l3-pattern-insights.js';
+
+export {
+  l2ComprehensiveIssuesTool,
+  executeL2ComprehensiveIssues,
+} from './l2-comprehensive-issues.js';
+export type {
+  ComprehensiveIssuesParams,
+  ComprehensiveIssuesResult,
+  Issue,
+} from './l2-comprehensive-issues.js';
+
 // Layer 3 - Interpretation Tools
+export {
+  l3PerformanceBudgetTool,
+  executeL3PerformanceBudget,
+} from './l3-performance-budget.js';
+export type {
+  L3PerformanceBudgetParams,
+  BudgetAnalysisResult,
+  PerformanceBudget,
+  BudgetViolation,
+} from './l3-performance-budget.js';
 export {
   l3DatabaseQueryTool,
   executeL3DatabaseQuery,
@@ -128,9 +179,14 @@ export const allTools = async () => {
   const { l2DeepAnalysisTool } = await import('./l2-deep-analysis.js');
   const { l2ScoreAnalysisTool } = await import('./l2-score-analysis.js');
   const { l2ThirdPartyImpactTool, l2ProgressiveThirdPartyTool } = await import('./l2-third-party-impact.js');
-  
+  const { l2LCPChainAnalysisTool } = await import('./l2-lcp-chain-analysis.js');
+  const { l2SiteComparisonTool } = await import('./l2-site-comparison.js');
+  const { l2ComprehensiveIssuesTool } = await import('./l2-comprehensive-issues.js');
+  const { l3PatternInsightsTool } = await import('./l3-pattern-insights.js');
+
   // Layer 3 tools
   const { l3DatabaseQueryTool } = await import('./l3-database-query.js');
+  const { l3PerformanceBudgetTool } = await import('./l3-performance-budget.js');
 
   return [
     // Layer 1 - Collection
@@ -146,8 +202,13 @@ export const allTools = async () => {
     l2ScoreAnalysisTool,
     l2ThirdPartyImpactTool,
     l2ProgressiveThirdPartyTool,
+    l2LCPChainAnalysisTool,
+    l2SiteComparisonTool,
+    l2ComprehensiveIssuesTool,
     // Layer 3 - Interpretation
     l3DatabaseQueryTool,
+    l3PatternInsightsTool,
+    l3PerformanceBudgetTool,
   ];
 };
 
@@ -202,10 +263,30 @@ export async function executeTool(name: string, params: any): Promise<any> {
       const { executeL2ProgressiveThirdParty } = await import('./l2-third-party-impact.js');
       return executeL2ProgressiveThirdParty(params);
     }
+    case 'l2_lcp_chain_analysis': {
+      const { executeL2LCPChainAnalysis } = await import('./l2-lcp-chain-analysis.js');
+      return executeL2LCPChainAnalysis(params);
+    }
+    case 'l2_site_comparison': {
+      const { executeL2SiteComparison } = await import('./l2-site-comparison.js');
+      return executeL2SiteComparison(params);
+    }
+    case 'l2_comprehensive_issues': {
+      const { executeL2ComprehensiveIssues } = await import('./l2-comprehensive-issues.js');
+      return executeL2ComprehensiveIssues(params);
+    }
     // Layer 3 tools
+    case 'l3_performance_budget': {
+      const { executeL3PerformanceBudget } = await import('./l3-performance-budget.js');
+      return executeL3PerformanceBudget(params);
+    }
     case 'l3_database_query': {
       const { executeL3DatabaseQuery } = await import('./l3-database-query.js');
       return executeL3DatabaseQuery(params);
+    }
+    case 'l3_pattern_insights': {
+      const { executeL3PatternInsights } = await import('./l3-pattern-insights.js');
+      return executeL3PatternInsights(params);
     }
     default:
       throw new Error(`Unknown tool: ${name}`);

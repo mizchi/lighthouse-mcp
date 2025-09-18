@@ -103,7 +103,6 @@ function generateMarkdownReport(analyses: SiteAnalysis[]): string {
 
       const topEntities = tp.entities.slice(0, 10);
       topEntities.forEach((entity: any, i: number) => {
-        const blockingRatio = (entity.blockingTime / entity.mainThreadTime * 100).toFixed(1);
         const impact = entity.blockingTime > 1000 ? '🔴 Critical' : 
                        entity.blockingTime > 500 ? '🟠 High' : 
                        entity.blockingTime > 250 ? '🟡 Medium' : '🟢 Low';

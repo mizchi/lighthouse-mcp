@@ -38,21 +38,21 @@ describe('L2 Performance Analysis Tool', () => {
     {
       id: 'prob-1',
       category: 'images',
-      severity: 'critical',
+      severity: 'critical' as const,
       impact: 0.8,
       description: 'Unoptimized images',
     },
     {
       id: 'prob-2',
       category: 'javascript',
-      severity: 'high',
+      severity: 'high' as const,
       impact: 0.6,
       description: 'Render-blocking scripts',
     },
     {
       id: 'prob-3',
       category: 'css',
-      severity: 'medium',
+      severity: 'medium' as const,
       impact: 0.4,
       description: 'Unused CSS',
     },
@@ -172,7 +172,7 @@ describe('L2 Performance Analysis Tool', () => {
       const manyProblems = Array.from({ length: 10 }, (_, i) => ({
         id: `prob-${i}`,
         category: 'test',
-        severity: 'critical',
+        severity: 'critical' as const,
         impact: 0.9,
         description: `Problem ${i}`,
       }));

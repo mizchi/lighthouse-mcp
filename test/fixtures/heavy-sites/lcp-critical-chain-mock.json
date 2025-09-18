@@ -1,0 +1,351 @@
+{
+  "requestedUrl": "https://example-lcp-chain.com",
+  "finalUrl": "https://example-lcp-chain.com",
+  "fetchTime": "2024-01-20T12:00:00.000Z",
+  "lighthouseVersion": "11.0.0",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+  "categories": {
+    "performance": {
+      "id": "performance",
+      "title": "Performance",
+      "score": 0.15
+    }
+  },
+  "audits": {
+    "largest-contentful-paint": {
+      "id": "largest-contentful-paint",
+      "title": "Largest Contentful Paint",
+      "score": 0.0,
+      "numericValue": 12500,
+      "numericUnit": "millisecond",
+      "displayValue": "12.5 s"
+    },
+    "largest-contentful-paint-element": {
+      "id": "largest-contentful-paint-element",
+      "title": "Largest Contentful Paint element",
+      "score": null,
+      "displayValue": "1 element found",
+      "details": {
+        "type": "list",
+        "items": [
+          {
+            "node": {
+              "type": "node",
+              "selector": "body > div.hero > img.hero-image",
+              "nodeLabel": "Hero Image",
+              "snippet": "<img class=\"hero-image\" src=\"/images/hero-final.jpg\" alt=\"Hero\">"
+            }
+          }
+        ]
+      }
+    },
+    "critical-request-chains": {
+      "id": "critical-request-chains",
+      "title": "Avoid chaining critical requests",
+      "displayValue": "18 chains found",
+      "details": {
+        "type": "criticalrequestchain",
+        "chains": {
+          "1": {
+            "request": {
+              "url": "https://example-lcp-chain.com",
+              "startTime": 0,
+              "endTime": 0.5,
+              "responseReceivedTime": 0.4,
+              "transferSize": 8000
+            },
+            "children": {
+              "2": {
+                "request": {
+                  "url": "https://example-lcp-chain.com/css/reset.css",
+                  "startTime": 0.5,
+                  "endTime": 1.2,
+                  "responseReceivedTime": 1.1,
+                  "transferSize": 15000
+                },
+                "children": {
+                  "3": {
+                    "request": {
+                      "url": "https://fonts.googleapis.com/css2?family=Roboto",
+                      "startTime": 1.2,
+                      "endTime": 2.0,
+                      "responseReceivedTime": 1.9,
+                      "transferSize": 25000
+                    },
+                    "children": {
+                      "4": {
+                        "request": {
+                          "url": "https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxK.woff2",
+                          "startTime": 2.0,
+                          "endTime": 2.8,
+                          "responseReceivedTime": 2.7,
+                          "transferSize": 18000
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "5": {
+                "request": {
+                  "url": "https://example-lcp-chain.com/js/config.js",
+                  "startTime": 0.5,
+                  "endTime": 1.0,
+                  "responseReceivedTime": 0.9,
+                  "transferSize": 5000
+                },
+                "children": {
+                  "6": {
+                    "request": {
+                      "url": "https://example-lcp-chain.com/js/loader.js",
+                      "startTime": 1.0,
+                      "endTime": 1.8,
+                      "responseReceivedTime": 1.7,
+                      "transferSize": 12000
+                    },
+                    "children": {
+                      "7": {
+                        "request": {
+                          "url": "https://example-lcp-chain.com/js/framework.js",
+                          "startTime": 1.8,
+                          "endTime": 3.5,
+                          "responseReceivedTime": 3.4,
+                          "transferSize": 85000
+                        },
+                        "children": {
+                          "8": {
+                            "request": {
+                              "url": "https://example-lcp-chain.com/js/app.js",
+                              "startTime": 3.5,
+                              "endTime": 5.0,
+                              "responseReceivedTime": 4.9,
+                              "transferSize": 120000
+                            },
+                            "children": {
+                              "9": {
+                                "request": {
+                                  "url": "https://example-lcp-chain.com/api/init",
+                                  "startTime": 5.0,
+                                  "endTime": 6.2,
+                                  "responseReceivedTime": 6.1,
+                                  "transferSize": 8000
+                                },
+                                "children": {
+                                  "10": {
+                                    "request": {
+                                      "url": "https://example-lcp-chain.com/api/user",
+                                      "startTime": 6.2,
+                                      "endTime": 7.5,
+                                      "responseReceivedTime": 7.4,
+                                      "transferSize": 5000
+                                    },
+                                    "children": {
+                                      "11": {
+                                        "request": {
+                                          "url": "https://example-lcp-chain.com/api/content",
+                                          "startTime": 7.5,
+                                          "endTime": 9.0,
+                                          "responseReceivedTime": 8.9,
+                                          "transferSize": 25000
+                                        },
+                                        "children": {
+                                          "12": {
+                                            "request": {
+                                              "url": "https://example-lcp-chain.com/images/hero-final.jpg",
+                                              "startTime": 9.0,
+                                              "endTime": 12.5,
+                                              "responseReceivedTime": 12.4,
+                                              "transferSize": 850000
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "longestChain": {
+          "duration": 12500,
+          "length": 12,
+          "transferSize": 1176000
+        }
+      }
+    },
+    "lcp-lazy-loaded": {
+      "id": "lcp-lazy-loaded",
+      "title": "Largest Contentful Paint image was not lazily loaded",
+      "score": 0,
+      "details": {
+        "type": "table",
+        "items": [
+          {
+            "node": {
+              "type": "node",
+              "selector": "body > div.hero > img.hero-image",
+              "nodeLabel": "Hero Image"
+            },
+            "url": "https://example-lcp-chain.com/images/hero-final.jpg",
+            "wastedMs": 3500
+          }
+        ]
+      }
+    },
+    "prioritize-lcp-image": {
+      "id": "prioritize-lcp-image",
+      "title": "Preload Largest Contentful Paint image",
+      "score": 0,
+      "numericValue": 3500,
+      "displayValue": "Potential savings of 3,500 ms",
+      "details": {
+        "type": "opportunity",
+        "items": [
+          {
+            "url": "https://example-lcp-chain.com/images/hero-final.jpg",
+            "wastedMs": 3500
+          }
+        ],
+        "overallSavingsMs": 3500
+      }
+    },
+    "network-requests": {
+      "id": "network-requests",
+      "title": "Network Requests",
+      "details": {
+        "type": "table",
+        "items": [
+          {
+            "url": "https://example-lcp-chain.com",
+            "startTime": 0,
+            "endTime": 500,
+            "transferSize": 8000,
+            "resourceType": "Document",
+            "statusCode": 200,
+            "mimeType": "text/html",
+            "resourceSize": 25000
+          },
+          {
+            "url": "https://example-lcp-chain.com/css/reset.css",
+            "startTime": 500,
+            "endTime": 1200,
+            "transferSize": 15000,
+            "resourceType": "Stylesheet",
+            "statusCode": 200,
+            "mimeType": "text/css",
+            "resourceSize": 45000
+          },
+          {
+            "url": "https://fonts.googleapis.com/css2?family=Roboto",
+            "startTime": 1200,
+            "endTime": 2000,
+            "transferSize": 25000,
+            "resourceType": "Stylesheet",
+            "statusCode": 200,
+            "mimeType": "text/css",
+            "resourceSize": 28000
+          },
+          {
+            "url": "https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxK.woff2",
+            "startTime": 2000,
+            "endTime": 2800,
+            "transferSize": 18000,
+            "resourceType": "Font",
+            "statusCode": 200,
+            "mimeType": "font/woff2",
+            "resourceSize": 18000
+          },
+          {
+            "url": "https://example-lcp-chain.com/js/config.js",
+            "startTime": 500,
+            "endTime": 1000,
+            "transferSize": 5000,
+            "resourceType": "Script",
+            "statusCode": 200,
+            "mimeType": "application/javascript",
+            "resourceSize": 8000
+          },
+          {
+            "url": "https://example-lcp-chain.com/js/loader.js",
+            "startTime": 1000,
+            "endTime": 1800,
+            "transferSize": 12000,
+            "resourceType": "Script",
+            "statusCode": 200,
+            "mimeType": "application/javascript",
+            "resourceSize": 35000
+          },
+          {
+            "url": "https://example-lcp-chain.com/js/framework.js",
+            "startTime": 1800,
+            "endTime": 3500,
+            "transferSize": 85000,
+            "resourceType": "Script",
+            "statusCode": 200,
+            "mimeType": "application/javascript",
+            "resourceSize": 250000
+          },
+          {
+            "url": "https://example-lcp-chain.com/js/app.js",
+            "startTime": 3500,
+            "endTime": 5000,
+            "transferSize": 120000,
+            "resourceType": "Script",
+            "statusCode": 200,
+            "mimeType": "application/javascript",
+            "resourceSize": 380000
+          },
+          {
+            "url": "https://example-lcp-chain.com/api/init",
+            "startTime": 5000,
+            "endTime": 6200,
+            "transferSize": 8000,
+            "resourceType": "XHR",
+            "statusCode": 200,
+            "mimeType": "application/json",
+            "resourceSize": 12000
+          },
+          {
+            "url": "https://example-lcp-chain.com/api/user",
+            "startTime": 6200,
+            "endTime": 7500,
+            "transferSize": 5000,
+            "resourceType": "XHR",
+            "statusCode": 200,
+            "mimeType": "application/json",
+            "resourceSize": 7000
+          },
+          {
+            "url": "https://example-lcp-chain.com/api/content",
+            "startTime": 7500,
+            "endTime": 9000,
+            "transferSize": 25000,
+            "resourceType": "XHR",
+            "statusCode": 200,
+            "mimeType": "application/json",
+            "resourceSize": 65000
+          },
+          {
+            "url": "https://example-lcp-chain.com/images/hero-final.jpg",
+            "startTime": 9000,
+            "endTime": 12500,
+            "transferSize": 850000,
+            "resourceType": "Image",
+            "statusCode": 200,
+            "mimeType": "image/jpeg",
+            "resourceSize": 850000
+          }
+        ]
+      }
+    }
+  }
+}

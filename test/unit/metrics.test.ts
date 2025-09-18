@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { extractMetrics } from '../../src/core/metrics';
-// getPerformanceImprovements関数が定義されていないため、一時的にコメントアウト
-// import { getPerformanceImprovements } from '../../src/core/metrics';
 import type { LighthouseReport, LighthouseAudits } from '../../src/types';
 
 describe('extractMetrics', () => {
@@ -102,88 +100,6 @@ describe('extractMetrics', () => {
       tti: undefined,
       ttfb: undefined,
       fid: undefined
-    });
-  });
-});
-
-describe.skip('getPerformanceImprovements', () => {
-  it('改善提案を生成する', () => {
-    const report = {
-      requestedUrl: 'https://example.com',
-      finalUrl: 'https://example.com',
-      fetchTime: '2024-01-01T00:00:00Z',
-      lighthouseVersion: '11.0.0',
-      userAgent: 'test',
-      environment: {} as any,
-      categories: {},
-      audits: {
-        'render-blocking-resources': {
-          id: 'render-blocking-resources',
-          title: 'Eliminate render-blocking resources',
-          description: 'Resources are blocking the first paint.',
-          score: 0.5,
-          scoreDisplayMode: 'numeric',
-          details: {
-            type: 'opportunity',
-            items: [
-              { url: 'style.css', wastedMs: 1500 },
-              { url: 'script.js', wastedMs: 1000 }
-            ]
-          }
-        },
-        'unused-css-rules': {
-          id: 'unused-css-rules',
-          title: 'Remove unused CSS',
-          description: 'Remove dead rules.',
-          score: 0.6,
-          scoreDisplayMode: 'numeric',
-          details: {
-            type: 'opportunity',
-            items: [
-              { url: 'style.css', wastedBytes: 150000 }
-            ]
-          }
-        },
-        'uses-responsive-images': {
-          id: 'uses-responsive-images',
-          title: 'Properly size images',
-          description: 'Serve images that are appropriately-sized.',
-          score: 0.8,
-          scoreDisplayMode: 'numeric',
-          details: {
-            type: 'opportunity',
-            items: []
-          }
-        },
-        'font-display': {
-          id: 'font-display',
-          title: 'Ensure text remains visible during webfont load',
-          description: 'Leverage the font-display CSS feature.',
-          score: 1,
-          scoreDisplayMode: 'binary'
-        },
-        'layout-shift-elements': {
-          id: 'layout-shift-elements',
-          title: 'Avoid large layout shifts',
-          description: 'These DOM elements had large layout shifts.',
-          score: null,
-          scoreDisplayMode: 'informative'
-        }
-      } as LighthouseAudits,
-    } as LighthouseReport;
-
-    const improvements = getPerformanceImprovements(report);
-
-    expect(improvements).toHaveLength(2);
-    expect(improvements[0]).toMatchObject({
-      title: 'Eliminate render-blocking resources',
-      impact: 'high',
-      score: 0.5
-    });
-    expect(improvements[1]).toMatchObject({
-      title: 'Remove unused CSS',
-      impact: 'medium',
-      score: 0.6
     });
   });
 });

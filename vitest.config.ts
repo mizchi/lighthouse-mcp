@@ -7,7 +7,12 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['./test/setup.ts'],
     includeSource: ['src/**/*.{js,ts}'],
-    threads: false,
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        singleThread: true
+      }
+    },
     fileParallelism: false,
     exclude: ['node_modules', 'dist', 'tmp', '**/*.config.ts'],
     coverage: {

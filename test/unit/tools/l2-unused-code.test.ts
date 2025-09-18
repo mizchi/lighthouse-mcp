@@ -161,7 +161,7 @@ describe('L2 Unused Code Tool', () => {
         },
       });
 
-      vi.spyOn(unusedCode, 'analyzeUnusedCode').mockReturnValue(null);
+      vi.spyOn(unusedCode, 'analyzeUnusedCode').mockReturnValue(null as any);
 
       const result = await executeL2UnusedCode({
         reportId: 'test-report',

@@ -218,10 +218,10 @@ export function generateAnalysisPrompt(
   prompts.push('\n## 優先改善項目\n');
   
   // Critical Chains
-  if (analysis.criticalChains.longestChain.length > 0) {
+  if (analysis.criticalChains.longestChain.nodes.length > 0) {
     prompts.push('### クリティカルリクエストチェーン');
     prompts.push('以下のリソースがレンダリングをブロックしています：');
-    analysis.criticalChains.longestChain.slice(0, 5).forEach(chain => {
+    analysis.criticalChains.longestChain.nodes.slice(0, 5).forEach((chain: any) => {
       prompts.push(`- ${chain.url} (${Math.round(chain.duration)}ms)`);
     });
     prompts.push('');

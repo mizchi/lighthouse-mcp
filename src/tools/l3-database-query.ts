@@ -97,7 +97,9 @@ export interface L3DatabaseQueryResult {
 /**
  * MCP tool definition for L3 database queries
  */
-export const l3DatabaseQueryTool = {
+import type { MCPTool } from '../types/mcp-types.js';
+
+export const l3DatabaseQueryTool: MCPTool = {
   name: 'l3_database_query',
   description: 'Query and analyze stored Lighthouse results from the database with interpretation',
   inputSchema: {
@@ -139,6 +141,47 @@ export const l3DatabaseQueryTool = {
     },
     required: ['queryType'],
   },
+  execute: async (params) => {
+    const result = await executeL3DatabaseQuery(params);
+
+    // Format output as markdown
+    let output = `# Database Query Results\n\n`;
+    output += `**Query Type:** ${params.queryType}\n\n`;
+
+    if (result.trends) {
+      output += `## Performance Trends\n`;
+      output += `- **Improvement Rate:** ${result.trends.improvementRate.toFixed(1)}%\n`;
+      output += `- **Average Score:** ${result.trends.averageScore.toFixed(1)}\n`;
+      output += `- **Volatility:** ${result.trends.volatility.toFixed(2)}\n\n`;
+    }
+
+    if (result.comparison) {
+      output += `## Performance Comparison\n`;
+      result.comparison.forEach(item => {
+        output += `- **${item.url}**: Score ${item.avgScore.toFixed(1)}, LCP ${item.avgLcp.toFixed(0)}ms\n`;
+      });
+      output += '\n';
+    }
+
+    if (result.statistics) {
+      output += `## Statistics\n`;
+      output += `- **Total Reports:** ${result.statistics.totalReports}\n`;
+      output += `- **Unique URLs:** ${result.statistics.uniqueUrls}\n`;
+      output += `- **Average Performance:** ${result.statistics.averagePerformance.toFixed(1)}\n\n`;
+    }
+
+    if (result.recommendations.length > 0) {
+      output += `## Recommendations\n`;
+      result.recommendations.forEach(rec => {
+        output += `- ${rec}\n`;
+      });
+    }
+
+    return {
+      type: 'text',
+      text: output
+    };
+  }
 };
 
 /**

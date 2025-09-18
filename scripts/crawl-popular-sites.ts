@@ -440,18 +440,35 @@ function generateReport(results: CrawlSummary[], customPath?: string): string {
   const categories = Array.from(new Set(results.map((r) => r.category)));
   for (const category of categories) {
     const categoryResults = results.filter((r) => r.category === category);
-    const categoryScores = categoryResults.filter((r) => r.performanceScore !== null);
+    const categoryScores = categoryResults
+      .map((r) => r.performanceScore)
+      .filter((score): score is number => score !== null);
+
     if (categoryScores.length === 0) continue;
 
-    const avgCategoryScore = categoryScores.reduce((sum, r) => sum + (r.performanceScore || 0), 0) / categoryScores.length;
-    const worstInCategory = categoryResults[0];
+    const avgCategoryScore = categoryScores.reduce((sum, score) => sum + score, 0) / categoryScores.length;
+
+    // Find the worst and best performing sites in this category
+    const worstInCategory = categoryResults.reduce((worst, current) => {
+      if (current.performanceScore === null) return worst;
+      if (worst.performanceScore === null) return current;
+      return current.performanceScore < worst.performanceScore ? current : worst;
+    }, categoryResults[0]);
+
+    const bestInCategory = categoryResults.reduce((best, current) => {
+      if (current.performanceScore === null) return best;
+      if (best.performanceScore === null) return current;
+      return current.performanceScore > best.performanceScore ? current : best;
+    }, categoryResults[0]);
 
     markdown += `### ${category}\n`;
     markdown += `- Sites analyzed: ${categoryResults.length}\n`;
     markdown += `- Average score: ${(avgCategoryScore * 100).toFixed(1)}\n`;
+    markdown += `- Best performer: ${bestInCategory.url} (${bestInCategory.performanceScore !== null ? (bestInCategory.performanceScore * 100).toFixed(0) : "N/A"})\n`;
     markdown += `- Worst performer: ${worstInCategory.url} (${worstInCategory.performanceScore !== null ? (worstInCategory.performanceScore * 100).toFixed(0) : "N/A"})\n\n`;
   }
 
+  // Analyze Core Web Vitals violations against Google's thresholds
   markdown += `## Core Web Vitals Violations\n\n`;
 
   const lcpViolations = results.filter((r) => r.lcp !== null && r.lcp > 2500);
@@ -470,6 +487,34 @@ function generateReport(results: CrawlSummary[], customPath?: string): string {
 
   markdown += `### TBT Violations (>300ms)\n`;
   markdown += `${tbtViolations.slice(0, 10).map((r) => `- ${r.url}: ${Math.round(r.tbt || 0)}ms`).join("\n")}\n\n`;
+
+  // Detect critically heavy sites
+  markdown += `## ⚠️ Critical Performance Issues\n\n`;
+  const criticalSites = results.filter(r => {
+    const score = r.performanceScore || 0;
+    const lcp = r.lcp || 0;
+    const tbt = r.tbt || 0;
+    return score < 0.3 || lcp > 5000 || tbt > 1500;
+  });
+
+  if (criticalSites.length > 0) {
+    markdown += `### 🔴 Sites with Critical Performance Issues\n`;
+    markdown += `The following sites require immediate attention:\n\n`;
+    criticalSites.forEach(site => {
+      const issues = [];
+      if ((site.performanceScore || 0) < 0.3) {
+        issues.push(`Score: ${((site.performanceScore || 0) * 100).toFixed(0)}/100`);
+      }
+      if ((site.lcp || 0) > 5000) {
+        issues.push(`LCP: ${Math.round(site.lcp || 0)}ms (>5000ms)`);
+      }
+      if ((site.tbt || 0) > 1500) {
+        issues.push(`TBT: ${Math.round(site.tbt || 0)}ms (>1500ms)`);
+      }
+      markdown += `- **${site.url}**: ${issues.join(', ')}\n`;
+    });
+    markdown += `\n`;
+  }
 
   markdown += `## Recommendations\n\n`;
   markdown += `### For Site Owners\n`;
@@ -507,6 +552,34 @@ function generateReport(results: CrawlSummary[], customPath?: string): string {
 function printConsoleSummary(results: CrawlSummary[]): void {
   console.log("📊 Performance Results:");
   console.log("=======================\n");
+
+  // Check for critical sites first
+  const criticalSites = results.filter(r => {
+    const score = r.performanceScore || 0;
+    const lcp = r.lcp || 0;
+    const tbt = r.tbt || 0;
+    return score < 0.3 || lcp > 5000 || tbt > 1500;
+  });
+
+  if (criticalSites.length > 0) {
+    console.log("🔴 CRITICAL PERFORMANCE ISSUES DETECTED:");
+    console.log("=========================================");
+    criticalSites.forEach(site => {
+      console.log(`⚠️  ${site.url}`);
+      const issues = [];
+      if ((site.performanceScore || 0) < 0.3) {
+        issues.push(`Extremely low score: ${((site.performanceScore || 0) * 100).toFixed(0)}/100`);
+      }
+      if ((site.lcp || 0) > 5000) {
+        issues.push(`LCP critical: ${Math.round(site.lcp || 0)}ms`);
+      }
+      if ((site.tbt || 0) > 1500) {
+        issues.push(`TBT critical: ${Math.round(site.tbt || 0)}ms`);
+      }
+      issues.forEach(issue => console.log(`   ❌ ${issue}`));
+    });
+    console.log("\n");
+  }
 
   results.forEach((site) => {
     const score = site.performanceScore !== null ? (site.performanceScore * 100).toFixed(0) : "N/A";

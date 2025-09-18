@@ -35,7 +35,21 @@ temp/
 *.tmp
 
 # Lighthouse temp files
-# /lighthouse.*
+lighthouse-*.json
+lighthouse-*.html
+.lighthouse/
 .lhdata/
+
+# Database
+*.db
+*.sqlite
+data/
+
+# Analysis results
+reports/
+*.report.json
+
+# Misc
 .codex
 .pnpm-store
+*.mjs

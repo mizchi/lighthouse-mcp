@@ -72,7 +72,7 @@ export async function createDeepAnalysisTool() {
       output += '\n';
       
       // Critical chain analysis
-      if (params.includeChains !== false && analysis.criticalChains.longestChain.length > 0) {
+      if (params.includeChains !== false && analysis.criticalChains.longestChain.nodes.length > 0) {
         output += `## Critical Request Chains\n\n`;
         output += `**Total Duration:** ${Math.round(analysis.criticalChains.totalDuration)}ms\n`;
         output += `**Total Transfer Size:** ${Math.round(analysis.criticalChains.totalTransferSize / 1024)}KB\n\n`;
@@ -85,7 +85,7 @@ export async function createDeepAnalysisTool() {
         }
         
         output += `### Top Critical Resources\n`;
-        for (const item of analysis.criticalChains.longestChain.slice(0, 3)) {
+        for (const item of analysis.criticalChains.longestChain.nodes.slice(0, 3)) {
           output += `- ${item.url.split('/').pop() || item.url} (${Math.round(item.duration)}ms, ${item.resourceType})\n`;
         }
         output += '\n';

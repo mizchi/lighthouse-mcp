@@ -297,6 +297,30 @@ export class LighthouseDatabase {
   /**
    * Close the database connection
    */
+  /**
+   * Get all crawl results (for analysis)
+   */
+  getAllCrawlResults(): CrawlResult[] {
+    const stmt = this.db.prepare(`
+      SELECT * FROM crawl_results
+      ORDER BY timestamp DESC
+    `);
+
+    return stmt.all() as CrawlResult[];
+  }
+
+  /**
+   * Get all crawl results as simplified reports format
+   */
+  getReports(): Array<{ id: number; data: string }> {
+    const stmt = this.db.prepare(`
+      SELECT id, report_json as data FROM crawl_results
+      ORDER BY timestamp DESC
+    `);
+
+    return stmt.all() as Array<{ id: number; data: string }>;
+  }
+
   close(): void {
     this.db.close();
   }

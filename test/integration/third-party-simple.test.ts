@@ -108,7 +108,9 @@ describe('L2 Third-Party Impact - Simple Tests', () => {
         // Should provide recommendations
         expect(compareResult.recommendations).toBeDefined();
         expect(Array.isArray(compareResult.recommendations)).toBe(true);
-        expect(compareResult.recommendations.length).toBeGreaterThan(0);
+        if (compareResult.recommendations) {
+          expect(compareResult.recommendations.length).toBeGreaterThan(0);
+        }
       }
     }
   }, TIMEOUT * 2);

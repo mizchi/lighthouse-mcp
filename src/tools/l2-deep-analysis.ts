@@ -33,7 +33,9 @@ export interface L2DeepAnalysisResult {
   };
 }
 
-export const l2DeepAnalysisTool = {
+import type { MCPTool } from '../types/mcp-types.js';
+
+export const l2DeepAnalysisTool: MCPTool = {
   name: 'l2_deep_analysis',
   description: 'Comprehensive deep analysis of Lighthouse report (Layer 2)',
   inputSchema: {
@@ -79,6 +81,40 @@ export const l2DeepAnalysisTool = {
       },
     },
   },
+  execute: async (params) => {
+    const result = await executeL2DeepAnalysis(params);
+
+    // Format output as markdown
+    let output = `# Deep Analysis Report\n\n`;
+    output += `**URL:** ${result.url}\n`;
+    output += `**Performance Score:** ${result.analysis.performanceScore}/100\n\n`;
+
+    output += `## Key Metrics\n`;
+    output += `- **LCP:** ${result.analysis.metrics.lcp}ms\n`;
+    output += `- **FCP:** ${result.analysis.metrics.fcp}ms\n`;
+    output += `- **CLS:** ${result.analysis.metrics.cls}\n`;
+    output += `- **TBT:** ${result.analysis.metrics.tbt}ms\n\n`;
+
+    if (result.analysis.problems.length > 0) {
+      output += `## Problems Found\n`;
+      result.analysis.problems.forEach(p => {
+        output += `- **${p.title}** (Impact: ${p.impact}): ${p.savings || ''}\n`;
+      });
+      output += '\n';
+    }
+
+    if (result.analysis.recommendations.length > 0) {
+      output += `## Recommendations\n`;
+      result.analysis.recommendations.forEach(r => {
+        output += `- ${r}\n`;
+      });
+    }
+
+    return {
+      type: 'text',
+      text: output
+    };
+  }
 };
 
 export async function executeL2DeepAnalysis(params: L2DeepAnalysisParams): Promise<L2DeepAnalysisResult> {
@@ -109,7 +145,10 @@ export async function executeL2DeepAnalysis(params: L2DeepAnalysisParams): Promi
   
   // Add optional analyses
   if (params.includeChains) {
-    analysis.criticalChains = analyzeCriticalChains(report);
+    const chainAnalysis = analyzeCriticalChains(report);
+    if (chainAnalysis) {
+      analysis.criticalChains = chainAnalysis;
+    }
   }
   
   if (params.includeUnusedCode) {

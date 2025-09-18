@@ -1,15 +1,15 @@
-# Lighthouse MCP
+# Lighthouse MCP (Model Context Protocol)
 
-A Model Context Protocol (MCP) server and CLI tool for Google Lighthouse performance analysis.
+Advanced performance analysis tools for web applications using Google Lighthouse and Model Context Protocol.
 
-## Features
+## 🚀 Features
 
-- 🚀 **Performance Analysis**: Comprehensive performance metrics including Core Web Vitals
-- 🔍 **Deep Analysis**: Critical request chains, unused code detection, and performance patterns
-- 📊 **Multiple Categories**: Performance, Accessibility, Best Practices, and SEO
-- 🎯 **Actionable Recommendations**: Prioritized suggestions for performance improvements
-- 💻 **CLI & Library**: Use as a command-line tool or integrate into your Node.js application
-- 🤖 **MCP Server**: Model Context Protocol integration for AI-powered analysis
+- **Three-Layer Architecture**: L1 (Collection) → L2 (Analysis) → L3 (Intelligence)
+- **Comprehensive Performance Analysis**: Deep dive into Core Web Vitals and all performance metrics
+- **Advanced Issue Detection**: Automatically identify and prioritize performance problems
+- **Performance Budget Management**: Track and enforce performance targets
+- **Pattern Recognition**: Cross-site analysis to identify common issues
+- **MCP Integration**: Standardized tool interface for AI assistants and automation
 
 ## Installation
 

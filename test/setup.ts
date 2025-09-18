@@ -3,15 +3,15 @@ import { vi } from 'vitest';
 // Mock node:sqlite for tests
 vi.mock('node:sqlite', () => ({
   DatabaseSync: class DatabaseSync {
-    constructor(path: string) {}
-    prepare(sql: string) {
+    constructor(_path: string) {}
+    prepare(_sql: string) {
       return {
-        run: (...params: any[]) => ({ lastInsertRowId: 1, changes: 1 }),
-        get: (...params: any[]) => null,
-        all: (...params: any[]) => [],
+        run: (..._params: any[]) => ({ lastInsertRowId: 1, changes: 1 }),
+        get: (..._params: any[]) => null,
+        all: (..._params: any[]) => [],
       };
     }
-    exec(sql: string) {}
+    exec(_sql: string) {}
     close() {}
   },
 }));

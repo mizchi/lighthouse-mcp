@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heavy Performance Test Page</title>
+
+    <!-- Render-blocking CSS in head -->
+    <link rel="stylesheet" href="https://cdn.example.com/heavy-framework-v1.css">
+    <link rel="stylesheet" href="https://cdn.example.com/heavy-framework-v2.css">
+    <link rel="stylesheet" href="https://cdn.example.com/heavy-framework-v3.css">
+
+    <!-- Inline CSS with unused rules -->
+    <style>
+        /* Massive unused CSS */
+        .unused-class-1 { display: none; color: red; }
+        .unused-class-2 { display: none; color: blue; }
+        .unused-class-3 { display: none; color: green; }
+        .unused-class-4 { display: none; color: yellow; }
+        .unused-class-5 { display: none; color: purple; }
+        /* ... imagine 1000+ more unused rules */
+        @media screen and (min-width: 9999px) {
+            .never-used { display: block; }
+        }
+
+        /* Actual used styles */
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Force layout shifts */
+        .late-loaded-image {
+            width: 100%;
+            /* No height specified - will cause CLS */
+        }
+
+        /* Complex selectors that are slow to compute */
+        div > div > div > div > div > span.complex { color: #333; }
+        *:not(:first-child):not(:last-child) { margin: 0; }
+    </style>
+
+    <!-- Multiple render-blocking scripts in head -->
+    <script src="https://cdn.example.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.example.com/lodash-4.17.21.min.js"></script>
+    <script src="https://cdn.example.com/moment-2.29.4.min.js"></script>
+
+    <!-- Synchronous analytics script -->
+    <script>
+        // Simulate heavy computation on load
+        function heavyComputation() {
+            let result = 0;
+            for (let i = 0; i < 1000000; i++) {
+                result += Math.sqrt(i);
+            }
+            return result;
+        }
+
+        // Block main thread
+        console.log('Starting heavy computation...');
+        const startTime = Date.now();
+        heavyComputation();
+        console.log(`Computation took ${Date.now() - startTime}ms`);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Heavy Performance Test Page</h1>
+        <p>This page intentionally contains multiple performance issues:</p>
+        <ul>
+            <li>Render-blocking resources</li>
+            <li>Unused CSS rules</li>
+            <li>Large JavaScript bundles</li>
+            <li>Layout shift issues</li>
+            <li>Long main thread tasks</li>
+        </ul>
+
+        <!-- Large images without dimensions -->
+        <img class="late-loaded-image" src="https://via.placeholder.com/1920x1080/FF0000/FFFFFF?text=Heavy+Image+1" alt="Heavy Image 1">
+
+        <!-- Hidden content with large DOM -->
+        <div style="display: none;">
+            <!-- Generate large DOM tree -->
+            <div><div><div><div><div>
+                <span>Deeply nested content</span>
+            </div></div></div></div></div>
+        </div>
+
+        <!-- Dynamically injected content that causes CLS -->
+        <div id="dynamic-content"></div>
+
+        <!-- Multiple third-party scripts -->
+        <script src="https://connect.facebook.net/en_US/sdk.js"></script>
+        <script src="https://platform.twitter.com/widgets.js"></script>
+        <script src="https://www.google-analytics.com/analytics.js"></script>
+        <script src="https://www.googletagmanager.com/gtm.js"></script>
+
+        <!-- Inline script with unused code -->
+        <script>
+            // Massive unused JavaScript
+            function unusedFunction1() {
+                console.log('This is never called');
+                return Array.from({length: 10000}, (_, i) => i * 2);
+            }
+
+            function unusedFunction2() {
+                console.log('This is also never called');
+                return fetch('/api/unused').then(r => r.json());
+            }
+
+            function unusedFunction3() {
+                const data = new Array(10000).fill(0);
+                return data.map(x => x * Math.random());
+            }
+
+            // Simulate layout shift after load
+            setTimeout(() => {
+                const content = document.getElementById('dynamic-content');
+                if (content) {
+                    content.innerHTML = '<div style="height: 500px; background: #f0f0f0;">Late loaded content causing CLS</div>';
+                }
+            }, 2000);
+
+            // Long task that blocks main thread
+            setTimeout(() => {
+                const start = Date.now();
+                while (Date.now() - start < 500) {
+                    // Block for 500ms
+                }
+            }, 1000);
+
+            // Create memory leak
+            let leakedData = [];
+            setInterval(() => {
+                leakedData.push(new Array(1000).fill('memory leak'));
+            }, 100);
+        </script>
+
+        <!-- More images without lazy loading -->
+        <img src="https://via.placeholder.com/1920x1080/00FF00/FFFFFF?text=Heavy+Image+2" alt="Heavy Image 2">
+        <img src="https://via.placeholder.com/1920x1080/0000FF/FFFFFF?text=Heavy+Image+3" alt="Heavy Image 3">
+        <img src="https://via.placeholder.com/1920x1080/FFFF00/FFFFFF?text=Heavy+Image+4" alt="Heavy Image 4">
+
+        <!-- Web fonts loaded late -->
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=block" rel="stylesheet">
+    </div>
+
+    <!-- Even more third-party scripts at the bottom -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+</body>
+</html>

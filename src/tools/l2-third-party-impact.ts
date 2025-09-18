@@ -465,7 +465,7 @@ export async function executeL2ProgressiveThirdParty(
     summaryParts.push('Blocking the analyzed domains did not produce a measurable improvement.');
   }
 
-  const summary = summaryParts.join(' ');
+  // const summary = summaryParts.join(' ');
 
   return {
     baseline: {
@@ -475,6 +475,5 @@ export async function executeL2ProgressiveThirdParty(
     iterations,
     optimalBlocking,
     recommendations,
-    summary,
   };
 }
