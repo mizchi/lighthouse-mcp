@@ -6,7 +6,7 @@
  * Usage: pnpm tsx scripts/analyze-sites.ts
  */
 
-import { executeL2ThirdPartyImpact } from '../dist/tools/l2-third-party-impact.js';
+import { executeL2ThirdPartyImpact } from '../src/tools/l2-third-party-impact.js';
 
 async function analyzeSite(url: string, siteName: string) {
   console.log(`\n${'='.repeat(60)}`);

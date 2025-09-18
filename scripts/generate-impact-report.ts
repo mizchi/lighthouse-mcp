@@ -6,9 +6,9 @@
  * Usage: pnpm tsx scripts/generate-impact-report.ts
  */
 
-import { executeL2ThirdPartyImpact } from '../dist/tools/l2-third-party-impact.js';
-import { executeL2PerformanceAnalysis } from '../dist/tools/l2-performance-analysis.js';
-import { executeL2UnusedCode } from '../dist/tools/l2-unused-code.js';
+import { executeL2ThirdPartyImpact } from '../src/tools/l2-third-party-impact.js';
+import { executeL2PerformanceAnalysis } from '../src/tools/l2-performance-analysis.js';
+import { executeL2UnusedCode } from '../src/tools/l2-unused-code.js';
 import * as fs from 'fs/promises';
 
 interface SiteAnalysis {

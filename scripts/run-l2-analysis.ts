@@ -24,6 +24,11 @@ async function runAllL2Analysis() {
     process.exit(1);
   }
 
+  // Ensure reports directory exists
+  try {
+    await fs.mkdir('reports', { recursive: true });
+  } catch {}
+
   // 1. l2_weighted_issues分析
   console.log('=== 1. l2_weighted_issues分析 ===');
   try {
@@ -32,7 +37,7 @@ async function runAllL2Analysis() {
 
     // 結果をファイルに保存
     await fs.writeFile(
-      'l2-weighted-issues-result.json',
+      path.join('reports', 'l2-weighted-issues-result.json'),
       JSON.stringify(weightedResult, null, 2)
     );
 
@@ -53,7 +58,7 @@ async function runAllL2Analysis() {
     console.log('✓ l2_cpu_analysis分析完了');
 
     await fs.writeFile(
-      'l2-cpu-analysis-result.json',
+      path.join('reports', 'l2-cpu-analysis-result.json'),
       JSON.stringify(cpuResult, null, 2)
     );
 
@@ -74,7 +79,7 @@ async function runAllL2Analysis() {
     console.log('✓ l2_comprehensive_issues分析完了');
 
     await fs.writeFile(
-      'l2-comprehensive-issues-result.json',
+      path.join('reports', 'l2-comprehensive-issues-result.json'),
       JSON.stringify(comprehensiveResult, null, 2)
     );
 
@@ -94,7 +99,7 @@ async function runAllL2Analysis() {
     console.log('✓ l2_unused_code分析完了');
 
     await fs.writeFile(
-      'l2-unused-code-result.json',
+      path.join('reports', 'l2-unused-code-result.json'),
       JSON.stringify(unusedCodeResult, null, 2)
     );
 
@@ -114,7 +119,7 @@ async function runAllL2Analysis() {
     console.log('✓ l2_critical_chain分析完了');
 
     await fs.writeFile(
-      'l2-critical-chain-result.json',
+      path.join('reports', 'l2-critical-chain-result.json'),
       JSON.stringify(criticalChainResult, null, 2)
     );
 
@@ -134,7 +139,7 @@ async function runAllL2Analysis() {
     console.log('✓ l2_deep_analysis分析完了');
 
     await fs.writeFile(
-      'l2-deep-analysis-result.json',
+      path.join('reports', 'l2-deep-analysis-result.json'),
       JSON.stringify(deepAnalysisResult, null, 2)
     );
 
@@ -148,13 +153,13 @@ async function runAllL2Analysis() {
   }
 
   console.log('\n✅ All L2 analyses complete!');
-  console.log('\n📁 Output files:');
-  console.log('  • l2-weighted-issues-result.json');
-  console.log('  • l2-cpu-analysis-result.json');
-  console.log('  • l2-comprehensive-issues-result.json');
-  console.log('  • l2-unused-code-result.json');
-  console.log('  • l2-critical-chain-result.json');
-  console.log('  • l2-deep-analysis-result.json');
+  console.log('\n📁 Output files saved to reports/ directory:');
+  console.log('  • reports/l2-weighted-issues-result.json');
+  console.log('  • reports/l2-cpu-analysis-result.json');
+  console.log('  • reports/l2-comprehensive-issues-result.json');
+  console.log('  • reports/l2-unused-code-result.json');
+  console.log('  • reports/l2-critical-chain-result.json');
+  console.log('  • reports/l2-deep-analysis-result.json');
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
