@@ -164,7 +164,7 @@ describe('L2 Performance Analysis Tool', () => {
 
     it('should throw error when neither reportId nor url provided', async () => {
       await expect(executeL2PerformanceAnalysis({})).rejects.toThrow(
-        'Either reportId or url is required'
+        'Either reportId, url, or report is required'
       );
     });
 

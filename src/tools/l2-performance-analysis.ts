@@ -3,8 +3,7 @@
  * Analyzes performance patterns and problems
  */
 
-import { executeL1GetReport } from './l1-get-report.js';
-import { executeL1Collect } from './l1-collect-single.js';
+import { loadReport } from './utils/report-loader.js';
 import { detectPatterns } from '../analyzers/patterns.js';
 import { detectProblems } from '../analyzers/problems.js';
 import { extractMetrics } from '../core/metrics.js';
@@ -88,28 +87,14 @@ export const l2PerformanceAnalysisTool = {
 };
 
 export async function executeL2PerformanceAnalysis(params: L2PerformanceAnalysisParams): Promise<L2PerformanceAnalysisResult> {
-  let reportId = params.reportId;
-  let report: LighthouseReport;
-
-  // Get report data
-  if (reportId) {
-    const result = await executeL1GetReport({ reportId });
-    report = result.data;
-  } else if (params.url) {
-    // Collect data first
-    const collectResult = await executeL1Collect({
-      url: params.url,
-      device: params.device || 'mobile',
-      categories: params.categories || ['performance'],
-      gather: params.gather || false,
-    });
-    reportId = collectResult.reportId;
-    
-    const result = await executeL1GetReport({ reportId });
-    report = result.data;
-  } else {
-    throw new Error('Either reportId or url is required');
-  }
+  // Load report using common utility
+  const { report, reportId } = await loadReport({
+    reportId: params.reportId,
+    url: params.url,
+    device: params.device,
+    categories: params.categories || ['performance'],
+    gather: params.gather || false,
+  });
 
   // Extract metrics
   const metrics = extractMetrics(report);

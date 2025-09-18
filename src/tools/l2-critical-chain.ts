@@ -3,8 +3,7 @@
  * Analyzes critical request chains
  */
 
-import { executeL1GetReport } from './l1-get-report.js';
-import { executeL1Collect } from './l1-collect-single.js';
+import { loadReport } from './utils/report-loader.js';
 import { analyzeCriticalChains } from '../analyzers/criticalChain.js';
 import type { LighthouseReport } from '../types/index.js';
 import type { ChainBottleneck, LcpInsight } from '../analyzers/criticalChain.js';
@@ -73,27 +72,14 @@ export const l2CriticalChainTool = {
 };
 
 export async function executeL2CriticalChain(params: L2CriticalChainParams): Promise<L2CriticalChainResult> {
-  let reportId = params.reportId;
-  let report: LighthouseReport;
-
-  // Get report data
-  if (reportId) {
-    const result = await executeL1GetReport({ reportId });
-    report = result.data;
-  } else if (params.url) {
-    const collectResult = await executeL1Collect({
-      url: params.url,
-      device: params.device || 'mobile',
-      categories: ['performance'],
-      gather: false,
-    });
-    reportId = collectResult.reportId;
-    
-    const result = await executeL1GetReport({ reportId });
-    report = result.data;
-  } else {
-    throw new Error('Either reportId or url is required');
-  }
+  // Load report using common utility
+  const { report, reportId } = await loadReport({
+    reportId: params.reportId,
+    url: params.url,
+    device: params.device,
+    categories: ['performance'],
+    gather: false,
+  });
 
   // Analyze critical chains
   const chainAnalysis = analyzeCriticalChains(report);

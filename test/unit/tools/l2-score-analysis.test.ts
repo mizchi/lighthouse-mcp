@@ -220,7 +220,7 @@ describe('L2 Score Analysis Tool', () => {
 
     it('should throw error when neither reportId nor url provided', async () => {
       await expect(executeL2ScoreAnalysis({})).rejects.toThrow(
-        'Either reportId or url is required'
+        'Either reportId, url, or report is required'
       );
     });
 

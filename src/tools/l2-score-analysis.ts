@@ -3,8 +3,7 @@
  * Analyzes score breakdown and opportunities
  */
 
-import { executeL1GetReport } from './l1-get-report.js';
-import { executeL1Collect } from './l1-collect-single.js';
+import { loadReport } from './utils/report-loader.js';
 import { analyzeReport } from '../analyzers/scores.js';
 import type { LighthouseReport } from '../types/index.js';
 
@@ -76,27 +75,14 @@ export const l2ScoreAnalysisTool = {
 };
 
 export async function executeL2ScoreAnalysis(params: L2ScoreAnalysisParams): Promise<L2ScoreAnalysisResult> {
-  let reportId = params.reportId;
-  let report: LighthouseReport;
-
-  // Get report data
-  if (reportId) {
-    const result = await executeL1GetReport({ reportId });
-    report = result.data;
-  } else if (params.url) {
-    const collectResult = await executeL1Collect({
-      url: params.url,
-      device: params.device || 'mobile',
-      categories: [params.category || 'performance'],
-      gather: false,
-    });
-    reportId = collectResult.reportId;
-    
-    const result = await executeL1GetReport({ reportId });
-    report = result.data;
-  } else {
-    throw new Error('Either reportId or url is required');
-  }
+  // Load report using common utility
+  const { report, reportId } = await loadReport({
+    reportId: params.reportId,
+    url: params.url,
+    device: params.device,
+    categories: [params.category || 'performance'],
+    gather: false,
+  });
 
   // Analyze score
   const category = params.category || 'performance';

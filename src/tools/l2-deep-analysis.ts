@@ -3,8 +3,7 @@
  * Comprehensive deep analysis of Lighthouse report
  */
 
-import { executeL1GetReport } from './l1-get-report.js';
-import { executeL1Collect } from './l1-collect-single.js';
+import { loadReport } from './utils/report-loader.js';
 import { performDeepAnalysis } from '../analyzers/deepAnalysis.js';
 import { analyzeCriticalChains } from '../analyzers/criticalChain.js';
 import { analyzeUnusedCode } from '../analyzers/unusedCode.js';
@@ -118,27 +117,14 @@ export const l2DeepAnalysisTool: MCPTool = {
 };
 
 export async function executeL2DeepAnalysis(params: L2DeepAnalysisParams): Promise<L2DeepAnalysisResult> {
-  let reportId = params.reportId;
-  let report: LighthouseReport;
-
-  // Get report data
-  if (reportId) {
-    const result = await executeL1GetReport({ reportId });
-    report = result.data;
-  } else if (params.url) {
-    const collectResult = await executeL1Collect({
-      url: params.url,
-      device: params.device || 'mobile',
-      categories: params.categories || ['performance'],
-      gather: false,
-    });
-    reportId = collectResult.reportId;
-    
-    const result = await executeL1GetReport({ reportId });
-    report = result.data;
-  } else {
-    throw new Error('Either reportId or url is required');
-  }
+  // Load report using common utility
+  const { report, reportId } = await loadReport({
+    reportId: params.reportId,
+    url: params.url,
+    device: params.device,
+    categories: params.categories || ['performance'],
+    gather: false,
+  });
 
   // Perform deep analysis
   const analysis = performDeepAnalysis(report);
