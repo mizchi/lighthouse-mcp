@@ -9,33 +9,72 @@ import { executeL1GetReport } from '../../src/tools/l1-get-report.js';
 import { executeL2DeepAnalysis } from '../../src/tools/l2-deep-analysis.js';
 import { rmSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
+import { getBrowserPool } from '../../src/core/browserPool.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-describe.skip('CPU Intensive DOM & CSS Detection (Real Lighthouse)', () => {
+describe('CPU Intensive DOM & CSS Detection (Real Lighthouse)', { timeout: 120000 }, () => {
   let server: any;
   let serverUrl: string;
 
-  beforeAll(async () => {
-    // Kill any lingering Chrome processes from previous tests
-    try {
-      if (process.platform === 'linux' || process.platform === 'darwin') {
-        execSync('pkill -f "chrome.*--headless" || true', { stdio: 'ignore' });
-      }
-    } catch {}
+  // Quick connectivity test
+  it('should connect to test server', async () => {
+    // Start a minimal server on random port
+    const simpleHtml = '<html><body><h1>Test</h1></body></html>';
 
-    // Clean up browser data directories
-    const browserDirs = '.lhdata/mcp';
-    if (existsSync(browserDirs)) {
+    const testServer = createServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(simpleHtml);
+    });
+
+    await new Promise<void>((resolve) => {
+      testServer.listen(0, () => {  // Use random available port
+        resolve();
+      });
+    });
+
+    const address = testServer.address();
+    const testPort = typeof address === 'object' && address ? address.port : 0;
+    const testUrl = `http://localhost:${testPort}`;
+    console.log(`Test server started at ${testUrl}`);
+
+    try {
+      // Just verify we can collect a report
+      const collectResult = await executeL1Collect({
+        url: testUrl,
+        device: 'desktop',
+        categories: ['performance'],
+        gather: true
+      });
+
+      expect(collectResult.reportId).toBeDefined();
+      console.log('✓ Successfully collected Lighthouse report');
+    } finally {
+      await new Promise<void>((resolve) => {
+        testServer.close(() => resolve());
+      });
+    }
+  }, 30000);
+
+  beforeAll(async () => {
+    // Set test-specific browser data directory
+    process.env.LIGHTHOUSE_USER_DATA_DIR = '.lhdata/test-cpu-intensive';
+
+    // Clean up any previous test data
+    const testDir = '.lhdata/test-cpu-intensive';
+    if (existsSync(testDir)) {
       try {
-        rmSync(browserDirs, { recursive: true, force: true });
+        rmSync(testDir, { recursive: true, force: true });
       } catch (e) {
-        console.log('Could not clean browser dirs:', e);
+        console.log('Could not clean test dir:', e);
       }
     }
+
+    // Reset browser pool for this test
+    const pool = getBrowserPool();
+    await pool.closeAll();
     // Start a local server to serve the CPU intensive HTML file
-    const port = 9877;
     const cpuIntensiveHtml = readFileSync(
       join(__dirname, '../fixtures/heavy-sites/cpu-intensive-dom-css.html'),
       'utf-8'
@@ -47,7 +86,9 @@ describe.skip('CPU Intensive DOM & CSS Detection (Real Lighthouse)', () => {
     });
 
     await new Promise<void>((resolve) => {
-      server.listen(port, () => {
+      server.listen(0, () => {  // Use random port
+        const address = server.address();
+        const port = typeof address === 'object' && address ? address.port : 0;
         serverUrl = `http://localhost:${port}`;
         console.log(`CPU test server started at ${serverUrl}`);
         resolve();
@@ -56,6 +97,11 @@ describe.skip('CPU Intensive DOM & CSS Detection (Real Lighthouse)', () => {
   });
 
   afterAll(async () => {
+    // Close browser pool before server
+    const pool = getBrowserPool();
+    await pool.closeAll();
+
+    // Close server
     await new Promise<void>((resolve) => {
       server.close(() => {
         console.log('CPU test server closed');
@@ -63,16 +109,17 @@ describe.skip('CPU Intensive DOM & CSS Detection (Real Lighthouse)', () => {
       });
     });
 
-    // Clean up Chrome processes after test
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for Chrome to close
+    // Clean up test directory
+    const testDir = '.lhdata/test-cpu-intensive';
     try {
-      if (process.platform === 'linux' || process.platform === 'darwin') {
-        execSync('pkill -f "chrome.*--headless" || true', { stdio: 'ignore' });
-      }
+      rmSync(testDir, { recursive: true, force: true });
     } catch {}
+
+    // Reset environment
+    delete process.env.LIGHTHOUSE_USER_DATA_DIR;
   });
 
-  it('should detect high CPU usage from complex DOM and CSS', async () => {
+  it.skip('should detect high CPU usage from complex DOM and CSS - SLOW', async () => {
     console.log('Analyzing CPU intensive page...');
 
     // Step 1: Collect Lighthouse report with CPU throttling
@@ -218,7 +265,7 @@ describe.skip('CPU Intensive DOM & CSS Detection (Real Lighthouse)', () => {
     console.log('✓ Detected CPU-related performance issues');
   }, 90000); // 90 second timeout for this intensive test
 
-  it('should detect expensive CSS selectors impact', async () => {
+  it.skip('should detect expensive CSS selectors impact - SLOW', async () => {
     // Collect report focused on CSS performance
     const collectResult = await executeL1Collect({
       url: serverUrl,

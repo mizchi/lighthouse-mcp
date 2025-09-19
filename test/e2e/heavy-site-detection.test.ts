@@ -11,33 +11,82 @@ import { executeL2WeightedIssues } from '../../src/tools/l2-weighted-issues.js';
 import { executeL3ActionPlanGenerator } from '../../src/tools/l3-action-plan-generator.js';
 import { rmSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
+import { getBrowserPool } from '../../src/core/browserPool.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-describe.skip('Heavy Site Detection (Real Lighthouse)', () => {
+describe('Heavy Site Detection (Real Lighthouse)', { timeout: 120000 }, () => {
   let server: any;
   let serverUrl: string;
 
-  beforeAll(async () => {
-    // Kill any lingering Chrome processes from previous tests
-    try {
-      if (process.platform === 'linux' || process.platform === 'darwin') {
-        execSync('pkill -f "chrome.*--headless" || true', { stdio: 'ignore' });
-      }
-    } catch {}
+  // Quick basic test
+  it('should run basic Lighthouse analysis', async () => {
+    const basicHtml = `
+      <html>
+        <head><title>Test Page</title></head>
+        <body>
+          <h1>Performance Test</h1>
+          <p>Simple test page for Lighthouse</p>
+        </body>
+      </html>`;
 
-    // Clean up browser data directories
-    const browserDirs = '.lhdata/mcp';
-    if (existsSync(browserDirs)) {
+    const testServer = createServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(basicHtml);
+    });
+
+    await new Promise<void>((resolve) => {
+      testServer.listen(0, () => resolve());  // Use random port
+    });
+
+    const address = testServer.address();
+    const testPort = typeof address === 'object' && address ? address.port : 0;
+
+    try {
+      const collectResult = await executeL1Collect({
+        url: `http://localhost:${testPort}`,
+        device: 'mobile',
+        categories: ['performance'],
+        gather: true
+      });
+
+      expect(collectResult.reportId).toBeDefined();
+
+      // Get the report and do basic analysis
+      const reportResult = await executeL1GetReport({
+        reportId: collectResult.reportId
+      });
+
+      expect(reportResult.data).toBeDefined();
+      expect(reportResult.data.categories?.performance).toBeDefined();
+
+      console.log('✓ Basic Lighthouse analysis completed');
+    } finally {
+      await new Promise<void>((resolve) => {
+        testServer.close(() => resolve());
+      });
+    }
+  }, 30000);
+
+  beforeAll(async () => {
+    // Set test-specific browser data directory
+    process.env.LIGHTHOUSE_USER_DATA_DIR = '.lhdata/test-heavy-site';
+
+    // Clean up any previous test data
+    const testDir = '.lhdata/test-heavy-site';
+    if (existsSync(testDir)) {
       try {
-        rmSync(browserDirs, { recursive: true, force: true });
+        rmSync(testDir, { recursive: true, force: true });
       } catch (e) {
-        console.log('Could not clean browser dirs:', e);
+        console.log('Could not clean test dir:', e);
       }
     }
+
+    // Reset browser pool for this test
+    const pool = getBrowserPool();
+    await pool.closeAll();
     // Start a local server to serve the heavy HTML file
-    const port = 9876;
     const heavyHtml = readFileSync(
       join(__dirname, '../fixtures/heavy-sites/extremely-heavy.html'),
       'utf-8'
@@ -49,7 +98,9 @@ describe.skip('Heavy Site Detection (Real Lighthouse)', () => {
     });
 
     await new Promise<void>((resolve) => {
-      server.listen(port, () => {
+      server.listen(0, () => {  // Use random port
+        const address = server.address();
+        const port = typeof address === 'object' && address ? address.port : 0;
         serverUrl = `http://localhost:${port}`;
         console.log(`Test server started at ${serverUrl}`);
         resolve();
@@ -58,6 +109,11 @@ describe.skip('Heavy Site Detection (Real Lighthouse)', () => {
   });
 
   afterAll(async () => {
+    // Close browser pool before server
+    const pool = getBrowserPool();
+    await pool.closeAll();
+
+    // Close server
     await new Promise<void>((resolve) => {
       server.close(() => {
         console.log('Test server closed');
@@ -65,16 +121,17 @@ describe.skip('Heavy Site Detection (Real Lighthouse)', () => {
       });
     });
 
-    // Clean up Chrome processes after test
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for Chrome to close
+    // Clean up test directory
+    const testDir = '.lhdata/test-heavy-site';
     try {
-      if (process.platform === 'linux' || process.platform === 'darwin') {
-        execSync('pkill -f "chrome.*--headless" || true', { stdio: 'ignore' });
-      }
+      rmSync(testDir, { recursive: true, force: true });
     } catch {}
+
+    // Reset environment
+    delete process.env.LIGHTHOUSE_USER_DATA_DIR;
   });
 
-  it('should detect performance issues in extremely heavy page', async () => {
+  it.skip('should detect performance issues in extremely heavy page - SLOW', async () => {
     // Step 1: Collect Lighthouse report
     console.log('Collecting Lighthouse report for heavy page...');
     const collectResult = await executeL1Collect({
@@ -180,7 +237,7 @@ describe.skip('Heavy Site Detection (Real Lighthouse)', () => {
     console.log('===================================\n');
   }, 60000); // 60 second timeout for Lighthouse
 
-  it('should detect specific performance metrics issues', async () => {
+  it.skip('should detect specific performance metrics issues - SLOW', async () => {
     // Collect report with specific focus on metrics
     const collectResult = await executeL1Collect({
       url: serverUrl,

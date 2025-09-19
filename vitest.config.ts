@@ -6,6 +6,10 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./test/setup.ts'],
+    // E2E tests run sequentially with longer timeout
+    sequence: {
+      hooks: 'list',
+    },
     includeSource: ['src/**/*.{js,ts}'],
     pool: 'threads',
     poolOptions: {
