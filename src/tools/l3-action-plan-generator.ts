@@ -163,9 +163,9 @@ function deduplicateIssues(issues: Partial<AggregatedIssue>[]): AggregatedIssue[
 }
 
 /**
- * Generate action plan from unified issues
+ * Generate action items from aggregated issues
  */
-function generateActionPlan(issues: AggregatedIssue[]): ActionItem[] {
+function generateActionItems(issues: AggregatedIssue[]): ActionItem[] {
   const actionItems: ActionItem[] = [];
 
   // Sort issues by weighted impact and severity
@@ -209,7 +209,7 @@ function generateActionPlan(issues: AggregatedIssue[]): ActionItem[] {
 /**
  * Perform unified analysis
  */
-export async function generateActionPlan(
+export async function performActionPlanGeneration(
   params: ActionPlanGeneratorParams
 ): Promise<ActionPlanResult> {
   const includeTools = params.includeTools || ['weighted', 'cpu', 'comprehensive', 'unused'];
@@ -317,7 +317,7 @@ export async function generateActionPlan(
   const unifiedIssues = deduplicateIssues(allIssues);
 
   // Generate action plan
-  const actionPlan = generateActionPlan(unifiedIssues);
+  const actionPlan = generateActionItems(unifiedIssues);
 
   // Calculate summary
   const summary = {
@@ -358,7 +358,7 @@ export async function generateActionPlan(
 export async function executeL3ActionPlanGenerator(
   params: ActionPlanGeneratorParams
 ): Promise<ActionPlanResult> {
-  return generateActionPlan(params);
+  return performActionPlanGeneration(params);
 }
 
 // MCP Tool definition

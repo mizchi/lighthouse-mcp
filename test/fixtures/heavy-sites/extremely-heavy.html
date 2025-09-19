@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extremely Heavy Performance Test Page</title>
+
+    <!-- 1. Render-blocking CSS chain -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+
+    <!-- 2. Massive inline styles with unused CSS (90% unused) -->
+    <style>
+        /* Thousands of unused CSS rules to bloat the page */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
+
+        /* Generate 500+ unused classes */
+        .unused-1 { display: none; background: linear-gradient(45deg, #ff0000, #00ff00); }
+        .unused-2 { display: none; background: linear-gradient(45deg, #00ff00, #0000ff); }
+        .unused-3 { display: none; background: linear-gradient(45deg, #0000ff, #ff0000); }
+        /* ... imagine 500 more ... */
+        ${Array.from({length: 500}, (_, i) => `.unused-${i+4} { display: none; color: #${Math.floor(Math.random()*16777215).toString(16)}; }`).join('\n        ')}
+
+        /* Complex selectors that are expensive to compute */
+        body > div > div > div > div > div > div > div > div > div > span { color: red; }
+        *:not(:first-child):not(:last-child):not(.active):not(.disabled) { margin: 1px; }
+        div[class*="col-"]:not(.hidden):not(.invisible) > * { padding: 1px; }
+
+        /* Actually used styles (only 10%) */
+        body { margin: 0; font-family: Arial, sans-serif; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { color: #333; }
+
+        /* No dimensions specified - causes CLS */
+        img { width: 100%; }
+
+        /* Force reflow/repaint */
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .flicker { animation: flicker 0.1s infinite; }
+    </style>
+
+    <!-- 3. Multiple blocking scripts in head -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.6/underscore-min.js"></script>
+
+    <!-- 4. Heavy synchronous computation -->
+    <script>
+        // Block the main thread for 2 seconds
+        console.log('Starting heavy blocking computation...');
+        const blockStart = Date.now();
+
+        // Fibonacci calculation (inefficient recursive version)
+        function fibonacci(n) {
+            if (n <= 1) return n;
+            return fibonacci(n - 1) + fibonacci(n - 2);
+        }
+
+        // Calculate fibonacci(35) - takes ~2-3 seconds
+        const result = fibonacci(35);
+        console.log(`Fibonacci(35) = ${result}, took ${Date.now() - blockStart}ms`);
+
+        // Create large objects in memory
+        const hugeArray = new Array(1000000).fill(0).map((_, i) => ({
+            id: i,
+            data: new Array(100).fill(Math.random()),
+            nested: { deep: { structure: { value: i } } }
+        }));
+
+        // Parse and stringify repeatedly (expensive)
+        for (let i = 0; i < 10; i++) {
+            JSON.parse(JSON.stringify(hugeArray.slice(0, 1000)));
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Extremely Heavy Test Page - Performance Nightmare</h1>
+
+        <div class="alert alert-danger">
+            <h2>Performance Issues Included:</h2>
+            <ul>
+                <li>15+ render-blocking resources</li>
+                <li>90% unused CSS (thousands of rules)</li>
+                <li>90% unused JavaScript</li>
+                <li>No image lazy loading</li>
+                <li>No resource hints (preconnect/dns-prefetch)</li>
+                <li>Cumulative Layout Shift (CLS) issues</li>
+                <li>Long main thread blocking (2+ seconds)</li>
+                <li>Memory leaks</li>
+                <li>Excessive DOM size (5000+ nodes)</li>
+                <li>Multiple third-party scripts</li>
+                <li>No caching headers</li>
+                <li>Synchronous XHR requests</li>
+            </ul>
+        </div>
+
+        <!-- 5. Images without dimensions (causes CLS) -->
+        <img src="https://picsum.photos/1920/1080?random=1" alt="Random image 1">
+        <img src="https://picsum.photos/1920/1080?random=2" alt="Random image 2">
+        <img src="https://picsum.photos/1920/1080?random=3" alt="Random image 3">
+
+        <!-- 6. Generate excessive DOM (5000+ elements) -->
+        <div id="huge-dom">
+            ${Array.from({length: 100}, (_, i) => `
+            <div class="row-${i}">
+                ${Array.from({length: 50}, (_, j) => `
+                <span class="cell-${i}-${j}" data-row="${i}" data-col="${j}">
+                    <em><strong><u>Cell ${i}-${j}</u></strong></em>
+                </span>
+                `).join('')}
+            </div>
+            `).join('')}
+        </div>
+
+        <!-- 7. Late-loading content that causes CLS -->
+        <div id="dynamic-content-1"></div>
+        <div id="dynamic-content-2"></div>
+        <div id="dynamic-content-3"></div>
+
+        <!-- 8. Multiple third-party scripts (blocking) -->
+        <script src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+        <script src="https://connect.facebook.net/en_US/sdk.js"></script>
+        <script src="https://platform.twitter.com/widgets.js"></script>
+        <script src="https://apis.google.com/js/platform.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+
+        <!-- 9. Massive inline script with unused code -->
+        <script>
+            // 90% unused JavaScript code
+            class UnusedClass1 {
+                constructor() {
+                    this.data = new Array(10000).fill(0);
+                }
+
+                unusedMethod1() {
+                    return this.data.map(x => x * 2);
+                }
+
+                unusedMethod2() {
+                    return this.data.reduce((a, b) => a + b);
+                }
+
+                unusedMethod3() {
+                    return this.data.filter(x => x > 0);
+                }
+            }
+
+            class UnusedClass2 {
+                constructor() {
+                    this.cache = new Map();
+                    for (let i = 0; i < 10000; i++) {
+                        this.cache.set(i, Math.random());
+                    }
+                }
+            }
+
+            class UnusedClass3 {
+                async fetchData() {
+                    // This is never called
+                    const promises = [];
+                    for (let i = 0; i < 100; i++) {
+                        promises.push(fetch(`/api/data/${i}`));
+                    }
+                    return Promise.all(promises);
+                }
+            }
+
+            // Create multiple unused functions
+            ${Array.from({length: 50}, (_, i) => `
+            function unusedFunction${i}() {
+                const data = new Array(1000).fill(${i});
+                return data.map(x => x * Math.random()).filter(x => x > 0.5);
+            }
+            `).join('\n            ')}
+
+            // 10. Cause layout thrashing
+            function causeLayoutThrashing() {
+                const elements = document.querySelectorAll('span');
+                elements.forEach(el => {
+                    el.style.left = el.offsetLeft + 'px'; // Read
+                    el.style.top = el.offsetTop + 'px';   // Read
+                    el.style.width = '100px';              // Write
+                    el.style.height = '20px';              // Write
+                });
+            }
+
+            // 11. Create memory leaks
+            let leakyArray = [];
+            let leakyMap = new Map();
+            let intervalId = setInterval(() => {
+                // Keep adding data without cleanup
+                leakyArray.push(new Array(1000).fill(Math.random()));
+                leakyMap.set(Date.now(), new Array(1000).fill('leak'));
+
+                // Create detached DOM nodes
+                const div = document.createElement('div');
+                div.innerHTML = '<span>Leaked node</span>'.repeat(100);
+                // Never append to document, but keep reference
+                leakyArray.push(div);
+            }, 100);
+
+            // 12. Long tasks after load
+            window.addEventListener('load', () => {
+                // Block main thread multiple times
+                setTimeout(() => {
+                    const start = Date.now();
+                    while (Date.now() - start < 1000) {
+                        // Block for 1 second
+                    }
+                    console.log('Blocked main thread for 1 second');
+                }, 500);
+
+                setTimeout(() => {
+                    const start = Date.now();
+                    while (Date.now() - start < 800) {
+                        // Block for 0.8 seconds
+                    }
+                    console.log('Blocked main thread for 0.8 seconds');
+                }, 2000);
+
+                // 13. Cause CLS by injecting content
+                setTimeout(() => {
+                    document.getElementById('dynamic-content-1').innerHTML = `
+                        <div style="height: 500px; background: red;">
+                            <h2>This content causes layout shift!</h2>
+                        </div>
+                    `;
+                }, 1500);
+
+                setTimeout(() => {
+                    document.getElementById('dynamic-content-2').innerHTML = `
+                        <div style="height: 300px; background: blue;">
+                            <h2>More layout shift!</h2>
+                        </div>
+                    `;
+                }, 3000);
+
+                // 14. Synchronous XHR (deprecated and slow)
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://jsonplaceholder.typicode.com/posts/1', false); // false = synchronous
+                try {
+                    xhr.send();
+                    console.log('Synchronous XHR completed');
+                } catch (e) {
+                    console.error('Synchronous XHR failed:', e);
+                }
+
+                // 15. Force reflow/repaint in a loop
+                requestAnimationFrame(function repaint() {
+                    document.body.style.backgroundColor =
+                        `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;
+                    requestAnimationFrame(repaint);
+                });
+            });
+
+            // 16. Console spam (affects performance)
+            for (let i = 0; i < 1000; i++) {
+                console.log(`Spam message ${i}: ${new Array(100).fill('x').join('')}`);
+            }
+        </script>
+
+        <!-- More heavy images at the bottom -->
+        <img src="https://picsum.photos/1920/1080?random=4" alt="Random image 4">
+        <img src="https://picsum.photos/1920/1080?random=5" alt="Random image 5">
+        <img src="https://picsum.photos/1920/1080?random=6" alt="Random image 6">
+        <img src="https://picsum.photos/1920/1080?random=7" alt="Random image 7">
+        <img src="https://picsum.photos/1920/1080?random=8" alt="Random image 8">
+
+        <!-- Load web fonts at the end (causes FOIT/FOUT) -->
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    </div>
+
+    <!-- Even more scripts at the bottom -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tensorflow@4.10.0/dist/tf.min.js"></script>
+</body>
+</html>
