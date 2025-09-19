@@ -1,5 +1,9 @@
 # Lighthouse MCP (Model Context Protocol)
 
+[![CI](https://github.com/mizchi/lighthouse-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/mizchi/lighthouse-mcp/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+
 Advanced performance analysis tools for web applications using Google Lighthouse and Model Context Protocol.
 
 ## 🚀 Features
