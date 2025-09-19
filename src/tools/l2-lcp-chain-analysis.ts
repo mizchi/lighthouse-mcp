@@ -345,10 +345,8 @@ export async function executeL2LCPChainAnalysis(
   } else if (params.url) {
     // For testing with mock data
     throw new Error('Direct URL analysis not implemented. Use reportId instead.');
-  } else if (params.report) {
-    report = params.report;
   } else {
-    throw new Error('Either reportId, url, or report is required');
+    throw new Error('Either reportId or url is required');
   }
 
   const analysis = analyzeLCPChain(report);

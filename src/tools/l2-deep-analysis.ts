@@ -120,7 +120,6 @@ export async function executeL2DeepAnalysis(params: L2DeepAnalysisParams): Promi
   const { report, reportId } = await loadReport({
     reportId: params.reportId,
     url: params.url,
-    report: params.report,
     device: params.device,
     categories: params.categories || ['performance'],
     gather: false,

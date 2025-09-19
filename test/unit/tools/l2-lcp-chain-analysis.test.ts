@@ -542,7 +542,7 @@ describe('L2 LCP Chain Analysis', () => {
     it('should throw error without reportId or url', async () => {
       await expect(
         executeL2LCPChainAnalysis({})
-      ).rejects.toThrow('Either reportId, url, or report is required');
+      ).rejects.toThrow('Either reportId or url is required');
     });
   });
 
