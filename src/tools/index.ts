@@ -41,15 +41,6 @@ export type {
 
 // Layer 2 - Analysis Tools
 export {
-  l2PerformanceAnalysisTool,
-  executeL2PerformanceAnalysis,
-} from './l2-performance-analysis.js';
-export type {
-  L2PerformanceAnalysisParams,
-  L2PerformanceAnalysisResult,
-} from './l2-performance-analysis.js';
-
-export {
   l2CriticalChainTool,
   executeL2CriticalChain,
 } from './l2-critical-chain.js';
@@ -119,37 +110,6 @@ export type {
 } from './l2-site-comparison.js';
 
 export {
-  l3PatternInsightsTool,
-  executeL3PatternInsights,
-} from './l3-pattern-insights.js';
-export type {
-  PatternInsightsParams,
-  PatternInsightsResult,
-  PerformancePattern,
-  CategoryInsight,
-} from './l3-pattern-insights.js';
-
-export {
-  l2ComprehensiveIssuesTool,
-  executeL2ComprehensiveIssues,
-} from './l2-comprehensive-issues.js';
-export type {
-  ComprehensiveIssuesParams,
-  ComprehensiveIssuesResult,
-  Issue,
-} from './l2-comprehensive-issues.js';
-
-export {
-  l2CPUAnalysisTool,
-  executeL2CPUAnalysis,
-} from './l2-cpu-analysis.js';
-export type {
-  CPUAnalysisParams,
-  CPUAnalysisResult,
-  CPUBottleneck,
-} from './l2-cpu-analysis.js';
-
-export {
   l2WeightedIssuesTool,
   executeL2WeightedIssues,
 } from './l2-weighted-issues.js';
@@ -164,23 +124,24 @@ export {
   l3PerformanceBudgetTool,
   executeL3PerformanceBudget,
 } from './l3-performance-budget.js';
-
-export {
-  l3UnifiedAnalysisTool,
-  executeL3UnifiedAnalysis,
-} from './l3-unified-analysis.js';
-export type {
-  UnifiedAnalysisParams,
-  UnifiedAnalysisResult,
-  UnifiedIssue,
-  ActionItem,
-} from './l3-unified-analysis.js';
 export type {
   L3PerformanceBudgetParams,
   BudgetAnalysisResult,
   PerformanceBudget,
   BudgetViolation,
 } from './l3-performance-budget.js';
+
+export {
+  l3PatternInsightsTool,
+  executeL3PatternInsights,
+} from './l3-pattern-insights.js';
+export type {
+  PatternInsightsParams,
+  PatternInsightsResult,
+  PerformancePattern,
+  CategoryInsight,
+} from './l3-pattern-insights.js';
+
 export {
   l3DatabaseQueryTool,
   executeL3DatabaseQuery,
@@ -193,6 +154,17 @@ export type {
   DatabaseStatistics,
 } from './l3-database-query.js';
 
+export {
+  l3UnifiedAnalysisTool,
+  executeL3UnifiedAnalysis,
+} from './l3-unified-analysis.js';
+export type {
+  UnifiedAnalysisParams,
+  UnifiedAnalysisResult,
+  UnifiedIssue,
+  ActionItem,
+} from './l3-unified-analysis.js';
+
 /**
  * All available MCP tools
  */
@@ -204,7 +176,6 @@ export const allTools = async () => {
   const { l1GetReportTool } = await import('./l1-get-report.js');
 
   // Layer 2 tools
-  const { l2PerformanceAnalysisTool } = await import('./l2-performance-analysis.js');
   const { l2CriticalChainTool } = await import('./l2-critical-chain.js');
   const { l2UnusedCodeTool } = await import('./l2-unused-code.js');
   const { l2DeepAnalysisTool } = await import('./l2-deep-analysis.js');
@@ -212,14 +183,13 @@ export const allTools = async () => {
   const { l2ThirdPartyImpactTool, l2ProgressiveThirdPartyTool } = await import('./l2-third-party-impact.js');
   const { l2LCPChainAnalysisTool } = await import('./l2-lcp-chain-analysis.js');
   const { l2SiteComparisonTool } = await import('./l2-site-comparison.js');
-  const { l2ComprehensiveIssuesTool } = await import('./l2-comprehensive-issues.js');
-  const { l2CPUAnalysisTool } = await import('./l2-cpu-analysis.js');
   const { l2WeightedIssuesTool } = await import('./l2-weighted-issues.js');
   const { l3PatternInsightsTool } = await import('./l3-pattern-insights.js');
 
   // Layer 3 tools
   const { l3DatabaseQueryTool } = await import('./l3-database-query.js');
   const { l3PerformanceBudgetTool } = await import('./l3-performance-budget.js');
+  const { l3UnifiedAnalysisTool } = await import('./l3-unified-analysis.js');
 
   return [
     // Layer 1 - Collection
@@ -228,7 +198,6 @@ export const allTools = async () => {
     l1ListReportsTool,
     l1GetReportTool,
     // Layer 2 - Analysis
-    l2PerformanceAnalysisTool,
     l2CriticalChainTool,
     l2UnusedCodeTool,
     l2DeepAnalysisTool,
@@ -237,13 +206,12 @@ export const allTools = async () => {
     l2ProgressiveThirdPartyTool,
     l2LCPChainAnalysisTool,
     l2SiteComparisonTool,
-    l2ComprehensiveIssuesTool,
-    l2CPUAnalysisTool,
     l2WeightedIssuesTool,
     // Layer 3 - Interpretation
     l3DatabaseQueryTool,
     l3PatternInsightsTool,
     l3PerformanceBudgetTool,
+    l3UnifiedAnalysisTool,
   ];
 };
 
@@ -270,10 +238,6 @@ export async function executeTool(name: string, params: any): Promise<any> {
       return executeL1GetReport(params);
     }
     // Layer 2 tools
-    case 'l2_performance_analysis': {
-      const { executeL2PerformanceAnalysis } = await import('./l2-performance-analysis.js');
-      return executeL2PerformanceAnalysis(params);
-    }
     case 'l2_critical_chain': {
       const { executeL2CriticalChain } = await import('./l2-critical-chain.js');
       return executeL2CriticalChain(params);
@@ -306,14 +270,6 @@ export async function executeTool(name: string, params: any): Promise<any> {
       const { executeL2SiteComparison } = await import('./l2-site-comparison.js');
       return executeL2SiteComparison(params);
     }
-    case 'l2_comprehensive_issues': {
-      const { executeL2ComprehensiveIssues } = await import('./l2-comprehensive-issues.js');
-      return executeL2ComprehensiveIssues(params);
-    }
-    case 'l2_cpu_analysis': {
-      const { executeL2CPUAnalysis } = await import('./l2-cpu-analysis.js');
-      return executeL2CPUAnalysis(params);
-    }
     case 'l2_weighted_issues': {
       const { executeL2WeightedIssues } = await import('./l2-weighted-issues.js');
       return executeL2WeightedIssues(params);
@@ -330,6 +286,10 @@ export async function executeTool(name: string, params: any): Promise<any> {
     case 'l3_pattern_insights': {
       const { executeL3PatternInsights } = await import('./l3-pattern-insights.js');
       return executeL3PatternInsights(params);
+    }
+    case 'l3_unified_analysis': {
+      const { executeL3UnifiedAnalysis } = await import('./l3-unified-analysis.js');
+      return executeL3UnifiedAnalysis(params);
     }
     default:
       throw new Error(`Unknown tool: ${name}`);

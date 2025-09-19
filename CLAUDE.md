@@ -1,5 +1,62 @@
 # Lighthouse MCP アーキテクチャガイド
 
+## MCPツール使用ガイド
+
+### ツールの選び方
+
+#### 1. パフォーマンス分析をしたい時
+- **まず使うツール**: `l2_deep_analysis` - 包括的な分析を実行
+- **補足ツール**:
+  - `l2_score_analysis` - スコアの詳細な内訳が必要な場合
+  - `l2_weighted_issues` - 改善優先度を重み付けで評価したい場合
+
+#### 2. 特定の問題を調査したい時
+- **未使用コード**: `l2_unused_code` - CSS/JSの未使用部分を検出
+- **サードパーティの影響**: `l2_third_party_impact` → `l2_progressive_third_party` - 段階的に詳細化
+- **LCPの問題**: `l2_lcp_chain_analysis` - LCPに影響するリソースチェーンを分析
+- **クリティカルパス**: `l2_critical_chain` または `l2_critical_chain_report` - ボトルネック特定
+
+#### 3. 複数サイトを比較したい時
+- `l2_site_comparison` - サイト間のパフォーマンス比較
+
+#### 4. 高度な分析が必要な時
+- `l3_unified_analysis` - 複数のL2ツールを統合して包括的レポート生成
+- `l3_performance_budget` - パフォーマンス予算との適合性評価
+- `l3_pattern_insights` - パターン認識による洞察
+- `l3_database_query` - 履歴データのクエリ
+
+### ツール実行の推奨フロー
+
+```
+1. データ収集（L1）
+   ↓
+   l1_collect_single または l1_batch_collect
+   ↓
+2. 基本分析（L2）
+   ↓
+   l2_deep_analysis（包括的）
+   ↓
+3. 問題別詳細分析（L2）
+   ↓
+   必要に応じて特化型ツールを実行
+   ↓
+4. 統合・解釈（L3）
+   ↓
+   l3_unified_analysis で総合評価
+```
+
+### ツール選択のベストプラクティス
+
+1. **初回分析時**: `l2_deep_analysis`から始める
+2. **問題が特定されたら**: 特化型L2ツールで詳細調査
+3. **改善提案が必要な時**: L3ツールで戦略的分析
+4. **定期モニタリング**: `l3_database_query`で傾向分析
+
+### 削除されたツール（重複のため）
+- `l2-performance-analysis.ts` → `l2-deep-analysis.ts`を使用
+- `l2-comprehensive-issues.ts` → `l2-weighted-issues.ts`を使用
+- `l2-cpu-analysis.ts` → `l2-deep-analysis.ts`に統合済み
+
 ## ツール層構造（L1/L2/L3）
 
 このプロジェクトでは、ツールを3つの層に分類して整理しています：
@@ -14,8 +71,9 @@
 
 **ツール例**:
 - `l1_collect_single`: 単一URLのLighthouse分析を実行
-- `l1_collect_multi`: 複数URLの並列分析を実行
-- `l1_collect_comparative`: 比較分析用のデータ収集
+- `l1_collect_batch`: 複数URLの並列分析を実行
+- `l1_list_reports`: 保存済みレポートの一覧取得
+- `l1_get_report`: 特定レポートの詳細取得
 
 ### L2 - データ分析層（Analysis Layer）
 **定義**: 収集されたログ・レポートを直接分析する機能
@@ -25,12 +83,17 @@
 - パターン検出と自動分類
 - 構造化された分析結果の生成
 
-**ツール例**:
+**現在利用可能なツール**:
 - `l2_critical_chain`: クリティカルリクエストチェーンの分析
+- `l2_critical_chain_report`: ボトルネック特化の分析レポート
 - `l2_unused_code`: 未使用コードの検出と定量化
-- `l2_deep_analysis`: パフォーマンスメトリクスの詳細分析
+- `l2_deep_analysis`: パフォーマンスメトリクスの詳細分析（最も包括的）
 - `l2_score_analysis`: スコアと改善点の体系的分析
+- `l2_weighted_issues`: Lighthouse重み付けによる問題の優先順位付け
 - `l2_third_party_impact`: サードパーティスクリプトの影響測定
+- `l2_progressive_third_party`: サードパーティの段階的詳細分析
+- `l2_lcp_chain_analysis`: LCP（Largest Contentful Paint）チェーン分析
+- `l2_site_comparison`: 複数サイト間のパフォーマンス比較
 
 ### L3 - 解釈・推論層（Interpretation Layer）
 **定義**: 人間による考察やAIモデルの思考を挟んで解釈が必要な処理のための機能
@@ -41,11 +104,11 @@
 - カスタム最適化戦略の立案
 - コンテキストを考慮した優先順位付け
 
-**ツール例**（将来実装予定）:
-- `l3_optimization_strategy`: 最適化戦略の立案
-- `l3_business_impact`: ビジネス影響の評価
-- `l3_custom_recommendations`: カスタム推奨事項の生成
-- `l3_architecture_review`: アーキテクチャレビューと提案
+**現在利用可能なツール**:
+- `l3_unified_analysis`: 複数L2ツールの統合分析
+- `l3_performance_budget`: パフォーマンス予算の評価と提案
+- `l3_pattern_insights`: パターン認識による洞察生成
+- `l3_database_query`: 履歴データのクエリと傾向分析
 
 ## 設計原則
 
@@ -87,7 +150,7 @@ export interface L2AnalysisResult {
 }
 ```
 
-### L3ツールの実装（将来）
+### L3ツールの実装
 ```typescript
 // L3ツールは解釈と推奨を提供
 export interface L3InterpretationResult {
@@ -116,7 +179,7 @@ export interface L3InterpretationResult {
 ## 今後の拡張計画
 
 ### L3層の実装
-- AIモデルとの統合
+- AIモデルとの統合強化
 - ビジネスメトリクスとの連携
 - カスタムルールエンジンの実装
 

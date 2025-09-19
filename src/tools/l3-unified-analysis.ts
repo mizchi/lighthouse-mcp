@@ -5,14 +5,13 @@
 
 import type { LighthouseReport } from '../types';
 import { executeL2WeightedIssues, type WeightedIssue } from './l2-weighted-issues';
-import { executeL2CPUAnalysis, type CPUBottleneck } from './l2-cpu-analysis';
-import { executeL2ComprehensiveIssues, type Issue } from './l2-comprehensive-issues';
 import { executeL2UnusedCode } from './l2-unused-code';
+import { executeL2DeepAnalysis } from './l2-deep-analysis';
 
 export interface UnifiedAnalysisParams {
   reportId?: string;
   report?: LighthouseReport;
-  includeTools?: Array<'weighted' | 'cpu' | 'comprehensive' | 'unused'>;
+  includeTools?: Array<'weighted' | 'deep' | 'unused'>;
   verbosity?: 'summary' | 'detailed' | 'full';
 }
 
@@ -378,8 +377,7 @@ export async function performUnifiedAnalysis(
   // Track tool coverage
   const toolCoverage = {
     weighted: toolResults.some(r => r.tool === 'weighted' && r.success),
-    cpu: toolResults.some(r => r.tool === 'cpu' && r.success),
-    comprehensive: toolResults.some(r => r.tool === 'comprehensive' && r.success),
+    deep: toolResults.some(r => r.tool === 'deep' && r.success),
     unused: toolResults.some(r => r.tool === 'unused' && r.success)
   };
 
@@ -417,7 +415,7 @@ export const l3UnifiedAnalysisTool = {
         type: 'array',
         items: {
           type: 'string',
-          enum: ['weighted', 'cpu', 'comprehensive', 'unused']
+          enum: ['weighted', 'deep', 'unused']
         },
         description: 'Which L2 tools to include in analysis'
       },

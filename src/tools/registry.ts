@@ -116,12 +116,6 @@ export async function initializeRegistry(): Promise<void> {
   });
 
   // Layer 2 - Performance Analysis Tools
-  const { l2PerformanceAnalysisTool } = await import('./l2-performance-analysis.js');
-  registerTool('performance_analyze', l2PerformanceAnalysisTool, 'performance', {
-    aliases: ['l2_performance_analysis', 'analyze_performance'],
-    tags: ['cwv', 'metrics', 'analysis'],
-    complexity: 'intermediate'
-  });
 
   const { l2ScoreAnalysisTool } = await import('./l2-score-analysis.js');
   registerTool('performance_score_breakdown', l2ScoreAnalysisTool, 'performance', {
@@ -161,10 +155,10 @@ export async function initializeRegistry(): Promise<void> {
   });
 
   // Layer 2 - Issue Detection Tools
-  const { l2ComprehensiveIssuesTool } = await import('./l2-comprehensive-issues.js');
-  registerTool('issues_comprehensive', l2ComprehensiveIssuesTool, 'issues', {
-    aliases: ['l2_comprehensive_issues', 'all_issues'],
-    tags: ['issues', 'problems', 'quick-wins'],
+  const { l2WeightedIssuesTool } = await import('./l2-weighted-issues.js');
+  registerTool('issues_weighted', l2WeightedIssuesTool, 'issues', {
+    aliases: ['l2_weighted_issues', 'weighted_issues'],
+    tags: ['issues', 'problems', 'priority', 'weights'],
     complexity: 'intermediate'
   });
 
@@ -222,6 +216,14 @@ export async function initializeRegistry(): Promise<void> {
     subcategory: 'data',
     aliases: ['l3_database_query', 'database_query'],
     tags: ['database', 'query', 'custom'],
+    complexity: 'advanced'
+  });
+
+  const { l3UnifiedAnalysisTool } = await import('./l3-unified-analysis.js');
+  registerTool('unified_analysis', l3UnifiedAnalysisTool, 'strategy', {
+    subcategory: 'comprehensive',
+    aliases: ['l3_unified_analysis', 'unified'],
+    tags: ['unified', 'comprehensive', 'multi-tool'],
     complexity: 'advanced'
   });
 }
