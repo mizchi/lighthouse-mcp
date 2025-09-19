@@ -1,6 +1,6 @@
 /**
- * L3 Multi-Tool Analysis
- * Integrates multiple L2 analysis tools to provide comprehensive insights
+ * L3 Action Plan Generator
+ * Aggregates issues from multiple L2 tools and generates prioritized action plans
  */
 
 import type { LighthouseReport } from '../types';
@@ -8,14 +8,14 @@ import { executeL2WeightedIssues, type WeightedIssue } from './l2-weighted-issue
 import { executeL2UnusedCode } from './l2-unused-code';
 import { executeL2DeepAnalysis } from './l2-deep-analysis';
 
-export interface MultiToolAnalysisParams {
+export interface ActionPlanGeneratorParams {
   reportId?: string;
   report?: LighthouseReport;
   includeTools?: Array<'weighted' | 'deep' | 'unused'>;
   verbosity?: 'summary' | 'detailed' | 'full';
 }
 
-export interface MultiToolIssue {
+export interface AggregatedIssue {
   id: string;
   title: string;
   description: string;
@@ -58,7 +58,7 @@ export interface ActionItem {
   };
 }
 
-export interface MultiToolAnalysisResult {
+export interface ActionPlanResult {
   performanceScore: number;
   summary: {
     criticalIssues: number;
@@ -67,7 +67,7 @@ export interface MultiToolAnalysisResult {
     lowIssues: number;
     totalIssues: number;
   };
-  unifiedIssues: MultiToolIssue[];
+  aggregatedIssues: AggregatedIssue[];
   actionPlan: ActionItem[];
   estimatedImpact: {
     scoreImprovement: number;
@@ -76,35 +76,16 @@ export interface MultiToolAnalysisResult {
   };
   toolCoverage: {
     weighted: boolean;
-    cpu: boolean;
-    comprehensive: boolean;
+    deep: boolean;
     unused: boolean;
   };
 }
 
-/**
- * Map CPU bottleneck to unified issue
- */
-function mapCPUBottleneck(bottleneck: CPUBottleneck): Partial<UnifiedIssue> {
-  return {
-    title: `CPU: ${bottleneck.type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
-    description: bottleneck.description,
-    severity: bottleneck.impact,
-    category: 'performance',
-    impact: {
-      timeImpact: bottleneck.duration
-    },
-    solutions: {
-      quick: bottleneck.solution,
-      effort: bottleneck.duration > 1000 ? 'high' : 'medium'
-    }
-  };
-}
 
 /**
  * Map weighted issue to unified issue
  */
-function mapWeightedIssue(issue: WeightedIssue): Partial<MultiToolIssue> {
+function mapWeightedIssue(issue: WeightedIssue): Partial<AggregatedIssue> {
   return {
     id: issue.auditId,
     title: issue.title,
@@ -126,32 +107,12 @@ function mapWeightedIssue(issue: WeightedIssue): Partial<MultiToolIssue> {
   };
 }
 
-/**
- * Map comprehensive issue to unified issue
- */
-function mapComprehensiveIssue(issue: Issue): Partial<UnifiedIssue> {
-  return {
-    title: issue.title,
-    description: issue.description,
-    severity: issue.severity,
-    category: issue.category,
-    impact: {
-      score: issue.impact.value,
-      timeImpact: issue.impact.unit === 'ms' ? issue.impact.value : undefined
-    },
-    solutions: {
-      quick: issue.solution.quick,
-      longTerm: issue.solution.longTerm,
-      effort: issue.solution.effort
-    }
-  };
-}
 
 /**
  * Deduplicate issues from multiple sources
  */
-function deduplicateIssues(issues: Partial<MultiToolIssue>[]): MultiToolIssue[] {
-  const issueMap = new Map<string, MultiToolIssue>();
+function deduplicateIssues(issues: Partial<AggregatedIssue>[]): AggregatedIssue[] {
+  const issueMap = new Map<string, AggregatedIssue>();
 
   for (const issue of issues) {
     // Generate a key based on title similarity
@@ -204,7 +165,7 @@ function deduplicateIssues(issues: Partial<MultiToolIssue>[]): MultiToolIssue[] 
 /**
  * Generate action plan from unified issues
  */
-function generateActionPlan(issues: MultiToolIssue[]): ActionItem[] {
+function generateActionPlan(issues: AggregatedIssue[]): ActionItem[] {
   const actionItems: ActionItem[] = [];
 
   // Sort issues by weighted impact and severity
@@ -248,11 +209,11 @@ function generateActionPlan(issues: MultiToolIssue[]): ActionItem[] {
 /**
  * Perform unified analysis
  */
-export async function performMultiToolAnalysis(
-  params: MultiToolAnalysisParams
-): Promise<MultiToolAnalysisResult> {
+export async function generateActionPlan(
+  params: ActionPlanGeneratorParams
+): Promise<ActionPlanResult> {
   const includeTools = params.includeTools || ['weighted', 'cpu', 'comprehensive', 'unused'];
-  const allIssues: Array<Partial<MultiToolIssue> & { sources: string[] }> = [];
+  const allIssues: Array<Partial<AggregatedIssue> & { sources: string[] }> = [];
 
   // Get the report
   let report: LighthouseReport | undefined;
@@ -384,7 +345,7 @@ export async function performMultiToolAnalysis(
   return {
     performanceScore: report?.categories?.performance?.score || 0,
     summary,
-    unifiedIssues,
+    aggregatedIssues: unifiedIssues,
     actionPlan,
     estimatedImpact,
     toolCoverage
@@ -392,18 +353,18 @@ export async function performMultiToolAnalysis(
 }
 
 /**
- * Execute multi-tool analysis (MCP wrapper)
+ * Execute action plan generator (MCP wrapper)
  */
-export async function executeL3MultiToolAnalysis(
-  params: MultiToolAnalysisParams
-): Promise<MultiToolAnalysisResult> {
-  return performMultiToolAnalysis(params);
+export async function executeL3ActionPlanGenerator(
+  params: ActionPlanGeneratorParams
+): Promise<ActionPlanResult> {
+  return generateActionPlan(params);
 }
 
 // MCP Tool definition
-export const l3MultiToolAnalysisTool = {
-  name: 'l3_multi_tool_analysis',
-  description: 'Multi-tool analysis integrating multiple L2 tools for comprehensive insights (Layer 3)',
+export const l3ActionPlanGeneratorTool = {
+  name: 'l3_action_plan_generator',
+  description: 'Generate prioritized action plans by aggregating issues from multiple L2 analysis tools (Layer 3)',
   inputSchema: {
     type: 'object',
     properties: {
@@ -426,12 +387,12 @@ export const l3MultiToolAnalysisTool = {
       }
     }
   },
-  execute: async (params: MultiToolAnalysisParams) => {
-    const result = await executeL3MultiToolAnalysis(params);
+  execute: async (params: ActionPlanGeneratorParams) => {
+    const result = await executeL3ActionPlanGenerator(params);
     const verbosity = params.verbosity || 'detailed';
 
     // Format output for MCP
-    let output = `# 🎯 Multi-Tool Performance Analysis\n\n`;
+    let output = `# 🎯 Performance Action Plan\n\n`;
 
     output += `## Performance Score: ${(result.performanceScore * 100).toFixed(0)}/100\n\n`;
 

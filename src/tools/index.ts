@@ -155,15 +155,15 @@ export type {
 } from './l3-database-query.js';
 
 export {
-  l3MultiToolAnalysisTool,
-  executeL3MultiToolAnalysis,
-} from './l3-multi-tool-analysis.js';
+  l3ActionPlanGeneratorTool,
+  executeL3ActionPlanGenerator,
+} from './l3-action-plan-generator.js';
 export type {
-  MultiToolAnalysisParams,
-  MultiToolAnalysisResult,
-  MultiToolIssue,
+  ActionPlanGeneratorParams,
+  ActionPlanResult,
+  AggregatedIssue,
   ActionItem,
-} from './l3-multi-tool-analysis.js';
+} from './l3-action-plan-generator.js';
 
 /**
  * All available MCP tools
@@ -189,7 +189,7 @@ export const allTools = async () => {
   // Layer 3 tools
   const { l3DatabaseQueryTool } = await import('./l3-database-query.js');
   const { l3PerformanceBudgetTool } = await import('./l3-performance-budget.js');
-  const { l3MultiToolAnalysisTool } = await import('./l3-multi-tool-analysis.js');
+  const { l3ActionPlanGeneratorTool } = await import('./l3-action-plan-generator.js');
 
   return [
     // Layer 1 - Collection
@@ -211,7 +211,7 @@ export const allTools = async () => {
     l3DatabaseQueryTool,
     l3PatternInsightsTool,
     l3PerformanceBudgetTool,
-    l3MultiToolAnalysisTool,
+    l3ActionPlanGeneratorTool,
   ];
 };
 
@@ -287,9 +287,9 @@ export async function executeTool(name: string, params: any): Promise<any> {
       const { executeL3PatternInsights } = await import('./l3-pattern-insights.js');
       return executeL3PatternInsights(params);
     }
-    case 'l3_multi_tool_analysis': {
-      const { executeL3MultiToolAnalysis } = await import('./l3-multi-tool-analysis.js');
-      return executeL3MultiToolAnalysis(params);
+    case 'l3_action_plan_generator': {
+      const { executeL3ActionPlanGenerator } = await import('./l3-action-plan-generator.js');
+      return executeL3ActionPlanGenerator(params);
     }
     default:
       throw new Error(`Unknown tool: ${name}`);

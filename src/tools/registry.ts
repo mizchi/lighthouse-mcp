@@ -219,11 +219,11 @@ export async function initializeRegistry(): Promise<void> {
     complexity: 'advanced'
   });
 
-  const { l3MultiToolAnalysisTool } = await import('./l3-multi-tool-analysis.js');
-  registerTool('multi_tool_analysis', l3MultiToolAnalysisTool, 'strategy', {
-    subcategory: 'comprehensive',
-    aliases: ['l3_multi_tool_analysis', 'multi_tool'],
-    tags: ['multi-tool', 'comprehensive', 'integrated'],
+  const { l3ActionPlanGeneratorTool } = await import('./l3-action-plan-generator.js');
+  registerTool('action_plan_generator', l3ActionPlanGeneratorTool, 'strategy', {
+    subcategory: 'planning',
+    aliases: ['l3_action_plan_generator', 'action_plan'],
+    tags: ['action-plan', 'prioritization', 'roadmap', 'aggregation'],
     complexity: 'advanced'
   });
 }

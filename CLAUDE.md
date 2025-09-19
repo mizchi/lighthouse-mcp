@@ -20,7 +20,7 @@
 - `l2_site_comparison` - サイト間のパフォーマンス比較
 
 #### 4. 高度な分析が必要な時
-- `l3_multi_tool_analysis` - 複数のL2ツールを統合して包括的レポート生成
+- `l3_action_plan_generator` - 複数のL2ツールから問題を集約し優先順位付きアクションプランを生成
 - `l3_performance_budget` - パフォーマンス予算との適合性評価
 - `l3_pattern_insights` - パターン認識による洞察
 - `l3_database_query` - 履歴データのクエリ
@@ -42,7 +42,7 @@
    ↓
 4. 統合・解釈（L3）
    ↓
-   l3_multi_tool_analysis で総合評価
+   l3_action_plan_generator で改善計画作成
 ```
 
 ### ツール選択のベストプラクティス
@@ -105,7 +105,7 @@
 - コンテキストを考慮した優先順位付け
 
 **現在利用可能なツール**:
-- `l3_multi_tool_analysis`: 複数L2ツールの統合分析
+- `l3_action_plan_generator`: 問題を集約して優先順位付きアクションプラン生成
 - `l3_performance_budget`: パフォーマンス予算の評価と提案
 - `l3_pattern_insights`: パターン認識による洞察生成
 - `l3_database_query`: 履歴データのクエリと傾向分析
