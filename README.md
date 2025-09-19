@@ -4,139 +4,139 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 
-LighthouseとModel Context Protocol (MCP)を統合した、Webアプリケーションの包括的なパフォーマンス分析ツールセットです。AIアシスタントや自動化ツールから利用可能な、構造化された分析機能を提供します。
+A comprehensive web application performance analysis toolset integrating Google Lighthouse with Model Context Protocol (MCP), providing structured analysis capabilities accessible to AI assistants and automation tools.
 
-## 📋 概要
+## 📋 Overview
 
-本プロジェクトは、Google Lighthouseの強力な分析機能をMCP（Model Context Protocol）経由で提供し、AIアシスタントが自動的にWebサイトのパフォーマンス問題を検出・診断・改善提案できるようにします。
+This project provides Google Lighthouse's powerful analysis capabilities through MCP (Model Context Protocol), enabling AI assistants to automatically detect, diagnose, and suggest improvements for website performance issues.
 
-### 主な特徴
+### Key Features
 
-- **🏗️ 3層アーキテクチャ**: データ収集（L1）→ 分析（L2）→ 解釈（L3）の明確な責任分離
-- **📊 包括的なパフォーマンス分析**: Core Web Vitalsを含む全メトリクスの詳細分析
-- **🎯 高度な問題検出**: 自動的なパフォーマンス問題の特定と優先順位付け
-- **💰 パフォーマンス予算管理**: 目標値の追跡と違反検出
-- **🔍 パターン認識**: 複数サイト間の共通問題の特定
-- **🤖 MCP統合**: AIアシスタントや自動化ツールとの標準化されたインターフェース
-- **✅ 完全なテストカバレッジ**: ユニットテスト、統合テスト、E2Eテストによる品質保証
+- **🏗️ Three-Layer Architecture**: Clear separation of concerns with Collection (L1) → Analysis (L2) → Intelligence (L3)
+- **📊 Comprehensive Performance Analysis**: Detailed analysis of all metrics including Core Web Vitals
+- **🎯 Advanced Problem Detection**: Automatic identification and prioritization of performance issues
+- **💰 Performance Budget Management**: Target tracking and violation detection
+- **🔍 Pattern Recognition**: Identification of common issues across multiple sites
+- **🤖 MCP Integration**: Standardized interface for AI assistants and automation tools
+- **✅ Complete Test Coverage**: Quality assurance through unit, integration, and E2E tests
 
-## 🚀 クイックスタート
+## 🚀 Quick Start
 
-### インストール
+### Installation
 
 ```bash
-# グローバルインストール
+# Global installation
 npm install -g lighthouse-mcp
 
-# プロジェクトへのインストール
+# Project installation
 npm install lighthouse-mcp
 
-# 開発環境のセットアップ（pnpm推奨）
+# Development setup (pnpm recommended)
 git clone https://github.com/mizchi/lighthouse-mcp.git
 cd lighthouse-mcp
 pnpm install
 ```
 
-### 基本的な使用方法
+### Basic Usage
 
 ```bash
-# Webサイトの分析
+# Analyze a website
 lhmcp https://example.com
 
-# MCPサーバーとして起動
+# Start as MCP server
 lhmcp --mcp
 
-# 詳細分析（クリティカルチェーン＋未使用コード）
+# Detailed analysis (critical chains + unused code)
 lhmcp https://example.com --chains --unused --device desktop
 ```
 
-## 🏗️ アーキテクチャ
+## 🏗️ Architecture
 
-### 3層構造の設計
+### Three-Layer Design
 
 ```
 ┌─────────────────────────────────────────┐
-│           L3 - 解釈層                    │
-│  （AIによる洞察、戦略立案、推奨事項）      │
+│        L3 - Intelligence Layer          │
+│  (AI insights, strategy, recommendations)│
 └─────────────────────────────────────────┘
                     ↑
 ┌─────────────────────────────────────────┐
-│           L2 - 分析層                    │
-│  （定量分析、パターン検出、問題特定）      │
+│         L2 - Analysis Layer             │
+│  (Quantitative analysis, pattern detection)│
 └─────────────────────────────────────────┘
                     ↑
 ┌─────────────────────────────────────────┐
-│           L1 - 収集層                    │
-│  （Lighthouse実行、データ収集、保存）     │
+│        L1 - Collection Layer            │
+│  (Lighthouse execution, data collection) │
 └─────────────────────────────────────────┘
 ```
 
-#### L1 - データ収集層 (Collection Layer)
+#### L1 - Collection Layer
 
-Lighthouseを直接実行し、生データを収集する基盤層：
+Foundation layer that directly executes Lighthouse and collects raw data:
 
-- **`l1_collect_single`**: 単一URLのLighthouse分析実行
-- **`l1_collect_multi`**: 複数URLの並列分析
-- **`l1_collect_comparative`**: 比較分析用データ収集
-- **`l1_get_report`**: 保存されたレポートの取得
-- **`l1_list_reports`**: レポート一覧の取得
+- **`l1_collect_single`**: Execute Lighthouse analysis on a single URL
+- **`l1_collect_multi`**: Parallel analysis of multiple URLs
+- **`l1_collect_comparative`**: Collect data for comparative analysis
+- **`l1_get_report`**: Retrieve saved reports
+- **`l1_list_reports`**: List available reports
 
-#### L2 - データ分析層 (Analysis Layer)
+#### L2 - Analysis Layer
 
-収集されたデータを分析し、構造化された洞察を提供：
+Analyzes collected data and provides structured insights:
 
-- **`l2_deep_analysis`**: 包括的なパフォーマンス問題の検出
-- **`l2_critical_chain`**: クリティカルリクエストチェーンの分析
-- **`l2_critical_chain_report`**: クリティカルチェーンの詳細レポート生成
-- **`l2_unused_code`**: 未使用JavaScript/CSSの検出と定量化
-- **`l2_third_party_impact`**: サードパーティスクリプトの影響測定
-- **`l2_progressive_third_party`**: 段階的なサードパーティブロッキング分析
-- **`l2_lcp_chain_analysis`**: LCP要素のクリティカルパス分析
-- **`l2_score_analysis`**: スコアと改善機会の体系的分析
-- **`l2_weighted_issues`**: 重み付けによる問題の優先順位付け
-- **`l2_patterns`**: パフォーマンスパターンの検出
+- **`l2_deep_analysis`**: Comprehensive performance problem detection
+- **`l2_critical_chain`**: Critical request chain analysis
+- **`l2_critical_chain_report`**: Detailed critical chain report generation
+- **`l2_unused_code`**: Detect and quantify unused JavaScript/CSS
+- **`l2_third_party_impact`**: Measure third-party script impact
+- **`l2_progressive_third_party`**: Progressive third-party blocking analysis
+- **`l2_lcp_chain_analysis`**: LCP element critical path analysis
+- **`l2_score_analysis`**: Systematic score and improvement analysis
+- **`l2_weighted_issues`**: Priority ranking through weighted analysis
+- **`l2_patterns`**: Performance pattern detection
 
-#### L3 - 解釈・推論層 (Intelligence Layer)
+#### L3 - Intelligence Layer
 
-高度な解釈と戦略的な推奨を提供：
+Provides advanced interpretation and strategic recommendations:
 
-- **`l3_action_plan_generator`**: 実行可能なアクションプランの生成
-- **`l3_performance_budget`**: パフォーマンス予算の管理と違反検出
-- **`l3_pattern_insights`**: 複数分析結果からのパターン洞察
+- **`l3_action_plan_generator`**: Generate actionable improvement plans
+- **`l3_performance_budget`**: Performance budget management and violation detection
+- **`l3_pattern_insights`**: Pattern insights from multiple analysis results
 
-## 🔧 利用可能なツール
+## 🔧 Available Tools
 
-### 主要な分析ツール
+### Primary Analysis Tools
 
-| ツール名 | 検出可能な問題 | 主な用途 |
-|---------|---------------|----------|
-| `l2_deep_analysis` | LCP遅延、CLS問題、TBT増大、未使用リソース | 包括的な問題診断 |
-| `l2_critical_chain` | レンダーブロッキングリソース、リクエストチェーン | 読み込み順序の最適化 |
-| `l2_unused_code` | 未使用CSS/JS、デッドコード | バンドルサイズ削減 |
-| `l2_third_party_impact` | サードパーティの影響、広告/分析の負荷 | 外部依存の最適化 |
-| `l2_lcp_chain_analysis` | LCPボトルネック、画像最適化機会 | LCP改善戦略 |
-| `l3_action_plan_generator` | 優先順位付きアクション、実装ガイド | 改善計画の立案 |
+| Tool Name | Detectable Issues | Primary Use Case |
+|-----------|------------------|------------------|
+| `l2_deep_analysis` | LCP delays, CLS issues, TBT increase, unused resources | Comprehensive problem diagnosis |
+| `l2_critical_chain` | Render-blocking resources, request chains | Load order optimization |
+| `l2_unused_code` | Unused CSS/JS, dead code | Bundle size reduction |
+| `l2_third_party_impact` | Third-party impact, ad/analytics load | External dependency optimization |
+| `l2_lcp_chain_analysis` | LCP bottlenecks, image optimization opportunities | LCP improvement strategy |
+| `l3_action_plan_generator` | Prioritized actions, implementation guide | Improvement planning |
 
-### 問題検出能力
+### Problem Detection Capabilities
 
-本ツールセットは以下の問題を自動検出可能：
+This toolset can automatically detect:
 
 - **Core Web Vitals**
-  - LCP > 4秒の遅延検出と原因特定
-  - CLS > 0.25の視覚的不安定性
-  - FID/INP > 300msの応答性問題
+  - LCP > 4s delay detection and root cause analysis
+  - CLS > 0.25 visual instability
+  - FID/INP > 300ms responsiveness issues
 
-- **リソース最適化**
-  - 未使用CSS/JavaScript（最大90%削減可能）
-  - レンダーブロッキングリソース
-  - 非効率なキャッシュ戦略
+- **Resource Optimization**
+  - Unused CSS/JavaScript (up to 90% reduction possible)
+  - Render-blocking resources
+  - Inefficient caching strategies
 
-- **サードパーティの影響**
-  - Google Analytics、Facebook SDK等の影響測定
-  - 広告ネットワークの負荷分析
-  - 段階的ブロッキングによる影響評価
+- **Third-Party Impact**
+  - Google Analytics, Facebook SDK impact measurement
+  - Ad network load analysis
+  - Progressive blocking impact assessment
 
-## 💻 プログラマティック利用
+## 💻 Programmatic Usage
 
 ### TypeScript/JavaScript
 
@@ -147,208 +147,208 @@ import {
   executeL3ActionPlanGenerator
 } from 'lighthouse-mcp';
 
-// 1. データ収集
+// 1. Data collection
 const collectResult = await executeL1Collect({
   url: 'https://example.com',
   device: 'mobile',
   categories: ['performance']
 });
 
-// 2. 深層分析
+// 2. Deep analysis
 const analysis = await executeL2DeepAnalysis({
   reportId: collectResult.reportId,
   includeChains: true,
   includeUnusedCode: true
 });
 
-// 3. アクションプラン生成
+// 3. Generate action plan
 const actionPlan = await executeL3ActionPlanGenerator({
   reportId: collectResult.reportId,
   includeTools: ['deep', 'unused', 'weighted']
 });
 
-console.log('検出された問題:', analysis.analysis.problems);
-console.log('推奨アクション:', actionPlan.actionPlan);
+console.log('Detected issues:', analysis.analysis.problems);
+console.log('Recommended actions:', actionPlan.actionPlan);
 ```
 
-### MCP経由での利用
+### MCP Usage
 
 ```javascript
-// MCPクライアントからツールを呼び出し
+// Call tools from MCP client
 const result = await client.callTool('l2_deep_analysis', {
   url: 'https://example.com',
   includeChains: true
 });
 ```
 
-## 🧪 テスト
+## 🧪 Testing
 
-プロジェクトは包括的なテストスイートを含んでいます：
+The project includes a comprehensive test suite:
 
 ```bash
-# すべてのテストを実行
+# Run all tests
 pnpm test
 
-# ユニットテストのみ
+# Unit tests only
 pnpm test:unit
 
-# 統合テストのみ
+# Integration tests only
 pnpm test:integration
 
-# E2Eテスト（実際のLighthouse実行）
+# E2E tests (actual Lighthouse execution)
 pnpm test:e2e
 
-# カバレッジレポート付き
+# With coverage report
 pnpm test:coverage
 ```
 
-### テストフィクスチャ
+### Test Fixtures
 
-`test/fixtures/problem-cases/`に実際の問題を再現するHTMLファイルを用意：
+HTML files in `test/fixtures/problem-cases/` reproduce actual problems:
 
-- `slow-lcp.html` - LCP遅延の検出テスト
-- `high-cls.html` - CLS問題の検出テスト
-- `third-party-heavy.html` - サードパーティ影響テスト
-- `unused-code-heavy.html` - 未使用コード検出テスト
-- `cpu-intensive-dom-css.html` - CPU負荷の高いDOM/CSSテスト
+- `slow-lcp.html` - LCP delay detection test
+- `high-cls.html` - CLS problem detection test
+- `third-party-heavy.html` - Third-party impact test
+- `unused-code-heavy.html` - Unused code detection test
+- `cpu-intensive-dom-css.html` - High CPU load DOM/CSS test
 
 ## 🔄 CI/CD
 
-GitHub Actionsによる自動化されたCI/CDパイプライン：
+Automated CI/CD pipeline with GitHub Actions:
 
 ```yaml
 # .github/workflows/ci.yml
-- Lint: コード品質チェック
-- TypeCheck: 型安全性の検証
-- Test: Node.js 18/20/22での互換性テスト
-- Build: プロダクションビルド
-- Integration: 統合テスト
-- Lighthouse Test: 実際のLighthouse実行テスト
+- Lint: Code quality checks
+- TypeCheck: Type safety verification
+- Test: Compatibility testing on Node.js 18/20/22
+- Build: Production build
+- Integration: Integration tests
+- Lighthouse Test: Actual Lighthouse execution tests
 ```
 
-## 📁 プロジェクト構造
+## 📁 Project Structure
 
 ```
 lighthouse-mcp/
 ├── src/
-│   ├── analyzers/          # 分析モジュール
-│   │   ├── criticalChain.ts    # クリティカルチェーン分析
-│   │   ├── unusedCode.ts       # 未使用コード検出
-│   │   ├── thirdParty.ts       # サードパーティ影響分析
-│   │   ├── deepAnalysis.ts     # 包括的分析
+│   ├── analyzers/          # Analysis modules
+│   │   ├── criticalChain.ts    # Critical chain analysis
+│   │   ├── unusedCode.ts       # Unused code detection
+│   │   ├── thirdParty.ts       # Third-party impact analysis
+│   │   ├── deepAnalysis.ts     # Comprehensive analysis
 │   │   └── ...
-│   ├── core/              # コア機能
-│   │   ├── lighthouse.ts       # Lighthouse実行
-│   │   ├── browserPool.ts      # ブラウザ管理
-│   │   ├── database.ts         # SQLiteストレージ
-│   │   └── metrics.ts          # メトリクス抽出
-│   ├── tools/             # MCPツール実装
-│   │   ├── l1-*.ts            # L1: データ収集層
-│   │   ├── l2-*.ts            # L2: 分析層
-│   │   ├── l3-*.ts            # L3: 解釈層
-│   │   └── utils/             # ユーティリティ
-│   ├── types/             # TypeScript型定義
-│   └── cli.ts             # CLIエントリポイント
-├── test/                  # テストファイル
-│   ├── unit/                  # ユニットテスト
-│   ├── integration/           # 統合テスト
-│   ├── e2e/                   # E2Eテスト
-│   └── fixtures/              # テスト用データ
-├── docs/                  # ドキュメント
-├── .github/workflows/     # CI/CD設定
-└── CLAUDE.md             # アーキテクチャガイド
+│   ├── core/              # Core functionality
+│   │   ├── lighthouse.ts       # Lighthouse execution
+│   │   ├── browserPool.ts      # Browser management
+│   │   ├── database.ts         # SQLite storage
+│   │   └── metrics.ts          # Metrics extraction
+│   ├── tools/             # MCP tool implementations
+│   │   ├── l1-*.ts            # L1: Collection layer
+│   │   ├── l2-*.ts            # L2: Analysis layer
+│   │   ├── l3-*.ts            # L3: Intelligence layer
+│   │   └── utils/             # Utilities
+│   ├── types/             # TypeScript type definitions
+│   └── cli.ts             # CLI entry point
+├── test/                  # Test files
+│   ├── unit/                  # Unit tests
+│   ├── integration/           # Integration tests
+│   ├── e2e/                   # E2E tests
+│   └── fixtures/              # Test data
+├── docs/                  # Documentation
+├── .github/workflows/     # CI/CD configuration
+└── CLAUDE.md             # Architecture guide
 ```
 
-## 📚 ドキュメント
+## 📚 Documentation
 
-- [Analysis Capabilities](./docs/analysis-capabilities.md) - 各ツールの詳細な分析能力
-- [Problem-Tool Matrix](./docs/problem-tool-matrix.md) - 問題別の適切なツール選択ガイド
-- [Tool Layers](./docs/tool-layers.md) - L1/L2/L3アーキテクチャの詳細
-- [MCP Tools Catalog](./docs/MCP-TOOLS-CATALOG.md) - 全ツールのカタログ
-- [CLAUDE.md](./CLAUDE.md) - 開発者向けアーキテクチャガイド
+- [Analysis Capabilities](./docs/analysis-capabilities.md) - Detailed analysis capabilities of each tool
+- [Problem-Tool Matrix](./docs/problem-tool-matrix.md) - Guide for selecting appropriate tools by problem
+- [Tool Layers](./docs/tool-layers.md) - Detailed L1/L2/L3 architecture
+- [MCP Tools Catalog](./docs/MCP-TOOLS-CATALOG.md) - Complete tool catalog
+- [CLAUDE.md](./CLAUDE.md) - Developer architecture guide
 
-## 🛠️ 開発
+## 🛠️ Development
 
-### セットアップ
+### Setup
 
 ```bash
-# リポジトリのクローン
+# Clone repository
 git clone https://github.com/mizchi/lighthouse-mcp.git
 cd lighthouse-mcp
 
-# 依存関係のインストール（pnpm推奨）
+# Install dependencies (pnpm recommended)
 pnpm install
 
-# ビルド
+# Build
 pnpm build
 
-# 開発サーバー起動
+# Start development server
 pnpm dev
 ```
 
-### 開発コマンド
+### Development Commands
 
 ```bash
-# TypeScriptコンパイル
+# TypeScript compilation
 pnpm typecheck
 
-# リンター実行
+# Run linter
 pnpm lint
 
-# テスト監視モード
+# Watch mode for tests
 pnpm test:watch
 
-# CLI開発実行
+# CLI development execution
 pnpm cli -- https://example.com
 ```
 
-## 🔑 環境変数
+## 🔑 Environment Variables
 
 ```bash
-# オプション：カスタムユーザーデータディレクトリ
+# Optional: Custom user data directory
 LIGHTHOUSE_USER_DATA_DIR=.lhdata/custom
 
-# オプション：デバッグモード
+# Optional: Debug mode
 DEBUG=lighthouse:*
 
-# CI環境フラグ
+# CI environment flag
 CI=true
 ```
 
-## 📈 パフォーマンス改善実績
+## 📈 Performance Improvement Results
 
-本ツールを使用した典型的な改善例：
+Typical improvements achieved using this toolset:
 
-- **LCP改善**: 8.5秒 → 2.1秒 (75%削減)
-- **未使用コード削減**: 840KB → 120KB (85%削減)
-- **サードパーティ影響**: TBT 1200ms → 300ms (75%削減)
-- **パフォーマンススコア**: 35点 → 92点
+- **LCP Improvement**: 8.5s → 2.1s (75% reduction)
+- **Unused Code Reduction**: 840KB → 120KB (85% reduction)
+- **Third-Party Impact**: TBT 1200ms → 300ms (75% reduction)
+- **Performance Score**: 35 → 92 points
 
-## 🤝 コントリビューション
+## 🤝 Contributing
 
-プルリクエストを歓迎します！以下のガイドラインに従ってください：
+Pull requests are welcome! Please follow these guidelines:
 
-1. Issueを作成して機能や修正を提案
-2. フィーチャーブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. テストを追加（カバレッジ90%以上を維持）
-4. 型チェックとリンターをパス (`pnpm typecheck && pnpm lint`)
-5. プルリクエストを作成
+1. Create an issue to propose features or fixes
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Add tests (maintain 90%+ coverage)
+4. Pass type checking and linting (`pnpm typecheck && pnpm lint`)
+5. Create a pull request
 
-## 📄 ライセンス
+## 📄 License
 
-MIT License - 詳細は[LICENSE](LICENSE)ファイルを参照
+MIT License - See [LICENSE](LICENSE) file for details
 
-## 👥 作者
+## 👥 Author
 
 - mizchi ([@mizchi](https://github.com/mizchi))
 
-## 🙏 謝辞
+## 🙏 Acknowledgments
 
-- Google Lighthouse チーム
-- Puppeteer 開発者
-- MCP (Model Context Protocol) 仕様策定者
-- すべてのコントリビューター
+- Google Lighthouse Team
+- Puppeteer Developers
+- MCP (Model Context Protocol) Specification Contributors
+- All Contributors
 
 ---
 
-**注**: このプロジェクトは積極的に開発中です。機能や API は変更される可能性があります。
+**Note**: This project is actively under development. Features and APIs may change.
