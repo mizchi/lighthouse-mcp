@@ -6,7 +6,6 @@
 import type { LighthouseReport } from '../types';
 import { executeL2WeightedIssues, type WeightedIssue } from './l2-weighted-issues';
 import { executeL2UnusedCode } from './l2-unused-code';
-import { executeL2DeepAnalysis } from './l2-deep-analysis';
 
 export interface ActionPlanGeneratorParams {
   reportId?: string;
