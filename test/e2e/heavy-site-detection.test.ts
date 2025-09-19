@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { createServer } from 'http';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -10,8 +9,8 @@ import { executeL2DeepAnalysis } from '../../src/tools/l2-deep-analysis.js';
 import { executeL2WeightedIssues } from '../../src/tools/l2-weighted-issues.js';
 import { executeL3ActionPlanGenerator } from '../../src/tools/l3-action-plan-generator.js';
 import { rmSync, existsSync } from 'fs';
-import { execSync } from 'child_process';
 import { getBrowserPool } from '../../src/core/browserPool.js';
+import { createTestServer, closeTestServer } from '../utils/get-port.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,21 +30,14 @@ describe('Heavy Site Detection (Real Lighthouse)', { timeout: 120000 }, () => {
         </body>
       </html>`;
 
-    const testServer = createServer((req, res) => {
+    const { server: testServer, url: testUrl } = await createTestServer((req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(basicHtml);
     });
 
-    await new Promise<void>((resolve) => {
-      testServer.listen(0, () => resolve());  // Use random port
-    });
-
-    const address = testServer.address();
-    const testPort = typeof address === 'object' && address ? address.port : 0;
-
     try {
       const collectResult = await executeL1Collect({
-        url: `http://localhost:${testPort}`,
+        url: testUrl,
         device: 'mobile',
         categories: ['performance'],
         gather: true
@@ -63,9 +55,7 @@ describe('Heavy Site Detection (Real Lighthouse)', { timeout: 120000 }, () => {
 
       console.log('✓ Basic Lighthouse analysis completed');
     } finally {
-      await new Promise<void>((resolve) => {
-        testServer.close(() => resolve());
-      });
+      await closeTestServer(testServer);
     }
   }, 30000);
 
@@ -92,20 +82,14 @@ describe('Heavy Site Detection (Real Lighthouse)', { timeout: 120000 }, () => {
       'utf-8'
     );
 
-    server = createServer((req, res) => {
+    const serverInfo = await createTestServer((req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(heavyHtml);
     });
 
-    await new Promise<void>((resolve) => {
-      server.listen(0, () => {  // Use random port
-        const address = server.address();
-        const port = typeof address === 'object' && address ? address.port : 0;
-        serverUrl = `http://localhost:${port}`;
-        console.log(`Test server started at ${serverUrl}`);
-        resolve();
-      });
-    });
+    server = serverInfo.server;
+    serverUrl = serverInfo.url;
+    console.log(`Test server started at ${serverUrl}`);
   });
 
   afterAll(async () => {
@@ -114,12 +98,8 @@ describe('Heavy Site Detection (Real Lighthouse)', { timeout: 120000 }, () => {
     await pool.closeAll();
 
     // Close server
-    await new Promise<void>((resolve) => {
-      server.close(() => {
-        console.log('Test server closed');
-        resolve();
-      });
-    });
+    await closeTestServer(server);
+    console.log('Test server closed');
 
     // Clean up test directory
     const testDir = '.lhdata/test-heavy-site';

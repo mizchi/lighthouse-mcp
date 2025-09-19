@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { createServer } from 'http';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -8,8 +7,8 @@ import { executeL1Collect } from '../../src/tools/l1-collect-single.js';
 import { executeL1GetReport } from '../../src/tools/l1-get-report.js';
 import { executeL2DeepAnalysis } from '../../src/tools/l2-deep-analysis.js';
 import { rmSync, existsSync } from 'fs';
-import { execSync } from 'child_process';
 import { getBrowserPool } from '../../src/core/browserPool.js';
+import { createTestServer, closeTestServer } from '../utils/get-port.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,20 +22,11 @@ describe('CPU Intensive DOM & CSS Detection (Real Lighthouse)', { timeout: 12000
     // Start a minimal server on random port
     const simpleHtml = '<html><body><h1>Test</h1></body></html>';
 
-    const testServer = createServer((req, res) => {
+    const { server: testServer, url: testUrl } = await createTestServer((req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(simpleHtml);
     });
 
-    await new Promise<void>((resolve) => {
-      testServer.listen(0, () => {  // Use random available port
-        resolve();
-      });
-    });
-
-    const address = testServer.address();
-    const testPort = typeof address === 'object' && address ? address.port : 0;
-    const testUrl = `http://localhost:${testPort}`;
     console.log(`Test server started at ${testUrl}`);
 
     try {
@@ -51,9 +41,7 @@ describe('CPU Intensive DOM & CSS Detection (Real Lighthouse)', { timeout: 12000
       expect(collectResult.reportId).toBeDefined();
       console.log('✓ Successfully collected Lighthouse report');
     } finally {
-      await new Promise<void>((resolve) => {
-        testServer.close(() => resolve());
-      });
+      await closeTestServer(testServer);
     }
   }, 30000);
 
@@ -80,20 +68,14 @@ describe('CPU Intensive DOM & CSS Detection (Real Lighthouse)', { timeout: 12000
       'utf-8'
     );
 
-    server = createServer((req, res) => {
+    const serverInfo = await createTestServer((req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(cpuIntensiveHtml);
     });
 
-    await new Promise<void>((resolve) => {
-      server.listen(0, () => {  // Use random port
-        const address = server.address();
-        const port = typeof address === 'object' && address ? address.port : 0;
-        serverUrl = `http://localhost:${port}`;
-        console.log(`CPU test server started at ${serverUrl}`);
-        resolve();
-      });
-    });
+    server = serverInfo.server;
+    serverUrl = serverInfo.url;
+    console.log(`CPU test server started at ${serverUrl}`);
   });
 
   afterAll(async () => {
@@ -102,12 +84,8 @@ describe('CPU Intensive DOM & CSS Detection (Real Lighthouse)', { timeout: 12000
     await pool.closeAll();
 
     // Close server
-    await new Promise<void>((resolve) => {
-      server.close(() => {
-        console.log('CPU test server closed');
-        resolve();
-      });
-    });
+    await closeTestServer(server);
+    console.log('CPU test server closed');
 
     // Clean up test directory
     const testDir = '.lhdata/test-cpu-intensive';
