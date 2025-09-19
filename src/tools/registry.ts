@@ -219,11 +219,11 @@ export async function initializeRegistry(): Promise<void> {
     complexity: 'advanced'
   });
 
-  const { l3UnifiedAnalysisTool } = await import('./l3-unified-analysis.js');
-  registerTool('unified_analysis', l3UnifiedAnalysisTool, 'strategy', {
+  const { l3MultiToolAnalysisTool } = await import('./l3-multi-tool-analysis.js');
+  registerTool('multi_tool_analysis', l3MultiToolAnalysisTool, 'strategy', {
     subcategory: 'comprehensive',
-    aliases: ['l3_unified_analysis', 'unified'],
-    tags: ['unified', 'comprehensive', 'multi-tool'],
+    aliases: ['l3_multi_tool_analysis', 'multi_tool'],
+    tags: ['multi-tool', 'comprehensive', 'integrated'],
     complexity: 'advanced'
   });
 }

@@ -1,6 +1,6 @@
 /**
- * L3 Unified Analysis Tool
- * Integrates multiple L2 analysis tools and provides a unified view
+ * L3 Multi-Tool Analysis
+ * Integrates multiple L2 analysis tools to provide comprehensive insights
  */
 
 import type { LighthouseReport } from '../types';
@@ -8,14 +8,14 @@ import { executeL2WeightedIssues, type WeightedIssue } from './l2-weighted-issue
 import { executeL2UnusedCode } from './l2-unused-code';
 import { executeL2DeepAnalysis } from './l2-deep-analysis';
 
-export interface UnifiedAnalysisParams {
+export interface MultiToolAnalysisParams {
   reportId?: string;
   report?: LighthouseReport;
   includeTools?: Array<'weighted' | 'deep' | 'unused'>;
   verbosity?: 'summary' | 'detailed' | 'full';
 }
 
-export interface UnifiedIssue {
+export interface MultiToolIssue {
   id: string;
   title: string;
   description: string;
@@ -58,7 +58,7 @@ export interface ActionItem {
   };
 }
 
-export interface UnifiedAnalysisResult {
+export interface MultiToolAnalysisResult {
   performanceScore: number;
   summary: {
     criticalIssues: number;
@@ -67,7 +67,7 @@ export interface UnifiedAnalysisResult {
     lowIssues: number;
     totalIssues: number;
   };
-  unifiedIssues: UnifiedIssue[];
+  unifiedIssues: MultiToolIssue[];
   actionPlan: ActionItem[];
   estimatedImpact: {
     scoreImprovement: number;
@@ -104,7 +104,7 @@ function mapCPUBottleneck(bottleneck: CPUBottleneck): Partial<UnifiedIssue> {
 /**
  * Map weighted issue to unified issue
  */
-function mapWeightedIssue(issue: WeightedIssue): Partial<UnifiedIssue> {
+function mapWeightedIssue(issue: WeightedIssue): Partial<MultiToolIssue> {
   return {
     id: issue.auditId,
     title: issue.title,
@@ -150,8 +150,8 @@ function mapComprehensiveIssue(issue: Issue): Partial<UnifiedIssue> {
 /**
  * Deduplicate issues from multiple sources
  */
-function deduplicateIssues(issues: Partial<UnifiedIssue>[]): UnifiedIssue[] {
-  const issueMap = new Map<string, UnifiedIssue>();
+function deduplicateIssues(issues: Partial<MultiToolIssue>[]): MultiToolIssue[] {
+  const issueMap = new Map<string, MultiToolIssue>();
 
   for (const issue of issues) {
     // Generate a key based on title similarity
@@ -204,7 +204,7 @@ function deduplicateIssues(issues: Partial<UnifiedIssue>[]): UnifiedIssue[] {
 /**
  * Generate action plan from unified issues
  */
-function generateActionPlan(issues: UnifiedIssue[]): ActionItem[] {
+function generateActionPlan(issues: MultiToolIssue[]): ActionItem[] {
   const actionItems: ActionItem[] = [];
 
   // Sort issues by weighted impact and severity
@@ -248,11 +248,11 @@ function generateActionPlan(issues: UnifiedIssue[]): ActionItem[] {
 /**
  * Perform unified analysis
  */
-export async function performUnifiedAnalysis(
-  params: UnifiedAnalysisParams
-): Promise<UnifiedAnalysisResult> {
+export async function performMultiToolAnalysis(
+  params: MultiToolAnalysisParams
+): Promise<MultiToolAnalysisResult> {
   const includeTools = params.includeTools || ['weighted', 'cpu', 'comprehensive', 'unused'];
-  const allIssues: Array<Partial<UnifiedIssue> & { sources: string[] }> = [];
+  const allIssues: Array<Partial<MultiToolIssue> & { sources: string[] }> = [];
 
   // Get the report
   let report: LighthouseReport | undefined;
@@ -392,18 +392,18 @@ export async function performUnifiedAnalysis(
 }
 
 /**
- * Execute unified analysis (MCP wrapper)
+ * Execute multi-tool analysis (MCP wrapper)
  */
-export async function executeL3UnifiedAnalysis(
-  params: UnifiedAnalysisParams
-): Promise<UnifiedAnalysisResult> {
-  return performUnifiedAnalysis(params);
+export async function executeL3MultiToolAnalysis(
+  params: MultiToolAnalysisParams
+): Promise<MultiToolAnalysisResult> {
+  return performMultiToolAnalysis(params);
 }
 
 // MCP Tool definition
-export const l3UnifiedAnalysisTool = {
-  name: 'l3_unified_analysis',
-  description: 'Unified analysis integrating multiple L2 tools (Layer 3)',
+export const l3MultiToolAnalysisTool = {
+  name: 'l3_multi_tool_analysis',
+  description: 'Multi-tool analysis integrating multiple L2 tools for comprehensive insights (Layer 3)',
   inputSchema: {
     type: 'object',
     properties: {
@@ -426,12 +426,12 @@ export const l3UnifiedAnalysisTool = {
       }
     }
   },
-  execute: async (params: UnifiedAnalysisParams) => {
-    const result = await executeL3UnifiedAnalysis(params);
+  execute: async (params: MultiToolAnalysisParams) => {
+    const result = await executeL3MultiToolAnalysis(params);
     const verbosity = params.verbosity || 'detailed';
 
     // Format output for MCP
-    let output = `# 🎯 Unified Performance Analysis\n\n`;
+    let output = `# 🎯 Multi-Tool Performance Analysis\n\n`;
 
     output += `## Performance Score: ${(result.performanceScore * 100).toFixed(0)}/100\n\n`;
 
