@@ -63,6 +63,13 @@ export const l1BatchCollectTool = {
     },
     required: ['urls'],
   },
+  execute: async (params: any) => {
+    const result = await executeL1BatchCollect(params);
+    return {
+      type: 'text',
+      text: JSON.stringify(result, null, 2)
+    };
+  }
 };
 
 export async function executeL1BatchCollect(params: L1BatchCollectParams): Promise<L1BatchCollectResult> {

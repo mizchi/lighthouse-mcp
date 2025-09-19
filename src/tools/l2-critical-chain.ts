@@ -68,6 +68,13 @@ export const l2CriticalChainTool = {
       },
     },
   },
+  execute: async (params: any) => {
+    const result = await executeL2CriticalChain(params);
+    return {
+      type: 'text',
+      text: JSON.stringify(result, null, 2)
+    };
+  }
 };
 
 export async function executeL2CriticalChain(params: L2CriticalChainParams): Promise<L2CriticalChainResult> {

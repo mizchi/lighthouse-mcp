@@ -39,10 +39,10 @@ export function getAuditWeight(
   auditId: string,
   categoryId: string = 'performance'
 ): number {
-  const category = report.categories?.[categoryId];
+  const category = report.categories?.[categoryId as keyof typeof report.categories];
   if (!category) return 0;
 
-  const auditRef = category.auditRefs?.find(ref => ref.id === auditId);
+  const auditRef = category.auditRefs?.find((ref: any) => ref.id === auditId);
   return auditRef?.weight || 0;
 }
 
@@ -75,13 +75,13 @@ export function extractOpportunities(report: LighthouseReport): Opportunity[] {
   const opportunities: Opportunity[] = [];
 
   for (const [id, audit] of Object.entries(report.audits)) {
-    if (audit.details?.type === 'opportunity' && audit.score !== null && audit.score < 1) {
+    if (audit && audit.details?.type === 'opportunity' && audit.score !== null && audit.score < 1) {
       opportunities.push({
         id,
-        title: audit.title,
-        score: audit.score,
-        savingsBytes: audit.details.overallSavingsBytes,
-        savingsMs: audit.details.overallSavingsMs,
+        title: audit!.title,
+        score: audit!.score,
+        savingsBytes: (audit!.details as any).overallSavingsBytes,
+        savingsMs: (audit!.details as any).overallSavingsMs,
       });
     }
   }

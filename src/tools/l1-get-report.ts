@@ -32,6 +32,13 @@ export const l1GetReportTool = {
     },
     required: ['reportId'],
   },
+  execute: async (params: any) => {
+    const result = await executeL1GetReport(params);
+    return {
+      type: 'text',
+      text: JSON.stringify(result, null, 2)
+    };
+  }
 };
 
 export async function executeL1GetReport(params: L1GetReportParams): Promise<L1GetReportResult> {

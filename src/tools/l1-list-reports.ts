@@ -44,6 +44,13 @@ export const l1ListReportsTool = {
       },
     },
   },
+  execute: async (params: any) => {
+    const result = await executeL1ListReports(params);
+    return {
+      type: 'text',
+      text: JSON.stringify(result, null, 2)
+    };
+  }
 };
 
 export async function executeL1ListReports(params: L1ListReportsParams): Promise<L1ListReportsResult> {

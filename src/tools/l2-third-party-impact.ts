@@ -70,6 +70,13 @@ export const l2ThirdPartyImpactTool = {
       },
     },
   },
+  execute: async (params: any) => {
+    const result = await executeL2ThirdPartyImpact(params);
+    return {
+      type: 'text',
+      text: JSON.stringify(result, null, 2)
+    };
+  }
 };
 
 export async function executeL2ThirdPartyImpact(params: L2ThirdPartyImpactParams): Promise<L2ThirdPartyImpactResult> {
@@ -309,6 +316,13 @@ export const l2ProgressiveThirdPartyTool = {
     },
     required: ['url'],
   },
+  execute: async (params: any) => {
+    const result = await executeL2ProgressiveThirdParty(params);
+    return {
+      type: 'text',
+      text: JSON.stringify(result, null, 2)
+    };
+  }
 };
 
 export async function executeL2ProgressiveThirdParty(

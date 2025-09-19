@@ -58,6 +58,13 @@ export const l2UnusedCodeTool = {
       },
     },
   },
+  execute: async (params: any) => {
+    const result = await executeL2UnusedCode(params);
+    return {
+      type: 'text',
+      text: JSON.stringify(result, null, 2)
+    };
+  }
 };
 
 export async function executeL2UnusedCode(params: L2UnusedCodeParams): Promise<L2UnusedCodeResult> {

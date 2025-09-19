@@ -376,9 +376,8 @@ export const l2WeightedIssuesTool = {
     }
 
     return {
-      success: true,
-      result,
-      output
+      type: 'text',
+      text: output
     };
   }
 };

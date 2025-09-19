@@ -150,29 +150,29 @@ export const l3DatabaseQueryTool: MCPTool = {
 
     if (result.trends) {
       output += `## Performance Trends\n`;
-      output += `- **Improvement Rate:** ${result.trends.improvementRate.toFixed(1)}%\n`;
-      output += `- **Average Score:** ${result.trends.averageScore.toFixed(1)}\n`;
-      output += `- **Volatility:** ${result.trends.volatility.toFixed(2)}\n\n`;
+      output += `- **Trend:** ${result.trends.trends.performance}\n`;
+      output += `- **Average Score:** ${result.trends.trends.averageScore.toFixed(1)}\n`;
+      output += `- **Volatility:** ${result.trends.trends.volatility.toFixed(2)}\n\n`;
     }
 
     if (result.comparison) {
       output += `## Performance Comparison\n`;
-      result.comparison.forEach(item => {
-        output += `- **${item.url}**: Score ${item.avgScore.toFixed(1)}, LCP ${item.avgLcp.toFixed(0)}ms\n`;
+      result.comparison.metrics.forEach((item: any) => {
+        output += `- **${item.url}**: Score ${(item.performanceScore || 0).toFixed(1)}, LCP ${(item.lcp || 0).toFixed(0)}ms\n`;
       });
       output += '\n';
     }
 
     if (result.statistics) {
       output += `## Statistics\n`;
-      output += `- **Total Reports:** ${result.statistics.totalReports}\n`;
+      output += `- **Total Crawls:** ${result.statistics.totalCrawls}\n`;
       output += `- **Unique URLs:** ${result.statistics.uniqueUrls}\n`;
-      output += `- **Average Performance:** ${result.statistics.averagePerformance.toFixed(1)}\n\n`;
+      output += `- **Average Performance:** ${result.statistics.avgPerformanceScore.toFixed(1)}\n\n`;
     }
 
-    if (result.recommendations.length > 0) {
+    if (result.recommendations && result.recommendations.length > 0) {
       output += `## Recommendations\n`;
-      result.recommendations.forEach(rec => {
+      result.recommendations.forEach((rec: string) => {
         output += `- ${rec}\n`;
       });
     }

@@ -67,6 +67,13 @@ export const l1CollectTool = {
     },
     required: ['url'],
   },
+  execute: async (params: any) => {
+    const result = await executeL1Collect(params);
+    return {
+      type: 'text',
+      text: JSON.stringify(result, null, 2)
+    };
+  }
 };
 
 export async function executeL1Collect(params: L1CollectParams): Promise<L1CollectResult> {

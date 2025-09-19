@@ -71,6 +71,13 @@ export const l2ScoreAnalysisTool = {
       },
     },
   },
+  execute: async (params: any) => {
+    const result = await executeL2ScoreAnalysis(params);
+    return {
+      type: 'text',
+      text: JSON.stringify(result, null, 2)
+    };
+  }
 };
 
 export async function executeL2ScoreAnalysis(params: L2ScoreAnalysisParams): Promise<L2ScoreAnalysisResult> {

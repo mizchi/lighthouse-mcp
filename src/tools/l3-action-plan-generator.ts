@@ -242,39 +242,7 @@ export async function performActionPlanGeneration(
     );
   }
 
-  if (includeTools.includes('cpu')) {
-    toolPromises.push(
-      executeL2CPUAnalysis({
-        reportId: params.reportId,
-        report
-      }).then(result => {
-        result.bottlenecks.forEach(bottleneck => {
-          allIssues.push({
-            ...mapCPUBottleneck(bottleneck),
-            sources: ['cpu']
-          });
-        });
-        return { tool: 'cpu', success: true };
-      }).catch(err => ({ tool: 'cpu', success: false, error: err }))
-    );
-  }
-
-  if (includeTools.includes('comprehensive')) {
-    toolPromises.push(
-      executeL2ComprehensiveIssues({
-        reportId: params.reportId,
-        report
-      }).then(result => {
-        result.issues.forEach(issue => {
-          allIssues.push({
-            ...mapComprehensiveIssue(issue),
-            sources: ['comprehensive']
-          });
-        });
-        return { tool: 'comprehensive', success: true };
-      }).catch(err => ({ tool: 'comprehensive', success: false, error: err }))
-    );
-  }
+  // CPU and Comprehensive tools have been removed
 
   if (includeTools.includes('unused')) {
     toolPromises.push(
@@ -282,14 +250,15 @@ export async function performActionPlanGeneration(
         reportId: params.reportId,
         report
       }).then(result => {
-        if (result.analysis.totalWastedBytes > 50000) {
+        const totalWastedBytes = (result as any)?.totalUnusedBytes || 0;
+        if (totalWastedBytes > 50000) {
           allIssues.push({
             title: 'Excessive Unused Code',
-            description: `${(result.analysis.totalWastedBytes / 1024).toFixed(1)}KB of unused code detected`,
-            severity: result.analysis.totalWastedBytes > 500000 ? 'critical' : 'high',
+            description: `${(totalWastedBytes / 1024).toFixed(1)}KB of unused code detected`,
+            severity: totalWastedBytes > 500000 ? 'critical' : 'high',
             category: 'performance',
             impact: {
-              sizeImpact: result.analysis.totalWastedBytes
+              sizeImpact: totalWastedBytes
             },
             sources: ['unused'],
             solutions: {
@@ -297,9 +266,9 @@ export async function performActionPlanGeneration(
               effort: 'medium'
             },
             metrics: {
-              current: result.analysis.totalWastedBytes,
+              current: totalWastedBytes,
               target: 0,
-              savings: result.analysis.totalWastedBytes,
+              savings: totalWastedBytes,
               unit: 'bytes'
             }
           });
@@ -329,9 +298,9 @@ export async function performActionPlanGeneration(
 
   // Calculate estimated impact
   const estimatedImpact = {
-    scoreImprovement: actionPlan.reduce((sum, item) => sum + item.estimatedImpact.scoreImprovement, 0),
-    loadTimeReduction: actionPlan.reduce((sum, item) => sum + item.estimatedImpact.loadTimeReduction, 0),
-    sizeReduction: actionPlan.reduce((sum, item) => sum + item.estimatedImpact.sizeReduction || 0, 0)
+    scoreImprovement: actionPlan.reduce((sum: number, item: any) => sum + item.estimatedImpact.scoreImprovement, 0),
+    loadTimeReduction: actionPlan.reduce((sum: number, item: any) => sum + item.estimatedImpact.loadTimeReduction, 0),
+    sizeReduction: actionPlan.reduce((sum, item) => sum + (item.estimatedImpact?.sizeReduction || 0), 0)
   };
 
   // Track tool coverage
@@ -423,7 +392,7 @@ export const l3ActionPlanGeneratorTool = {
 
       if (verbosity === 'full') {
         output += `## 🔍 Detailed Issues\n`;
-        result.unifiedIssues.slice(0, 10).forEach((issue, index) => {
+        result.aggregatedIssues.slice(0, 10).forEach((issue: any, index: number) => {
           output += `\n### ${index + 1}. ${issue.title}\n`;
           output += `- **Severity**: ${issue.severity}\n`;
           output += `- **Category**: ${issue.category}\n`;
@@ -450,14 +419,12 @@ export const l3ActionPlanGeneratorTool = {
 
     output += `\n## 📈 Analysis Coverage\n`;
     output += `- Weighted Issues: ${result.toolCoverage.weighted ? '✅' : '❌'}\n`;
-    output += `- CPU Analysis: ${result.toolCoverage.cpu ? '✅' : '❌'}\n`;
-    output += `- Comprehensive Issues: ${result.toolCoverage.comprehensive ? '✅' : '❌'}\n`;
+    output += `- Deep Analysis: ${result.toolCoverage.deep ? '✅' : '❌'}\n`;
     output += `- Unused Code: ${result.toolCoverage.unused ? '✅' : '❌'}\n`;
 
     return {
-      success: true,
-      result,
-      output
+      type: 'text',
+      text: output
     };
   }
 };
