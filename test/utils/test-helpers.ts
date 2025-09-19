@@ -104,7 +104,7 @@ export function createMockReport(options: {
         height: 640,
         deviceScaleFactor: 2
       }
-    }
+    } as any
   } as LighthouseReport;
 }
 

@@ -5,7 +5,6 @@
 
 import { loadReport } from './utils/report-loader.js';
 import { analyzeCriticalChains } from '../analyzers/criticalChain.js';
-import type { LighthouseReport } from '../types/index.js';
 import type { ChainBottleneck, LcpInsight } from '../analyzers/criticalChain.js';
 
 export interface L2CriticalChainParams {

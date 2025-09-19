@@ -1,6 +1,7 @@
 import type { LighthouseReport } from '../types';
 import { executeL1BatchCollect } from './l1-collect-batch';
 import { extractMetrics } from '../core/metrics';
+import { getDefaultStorage } from '../core/reportStorage';
 
 export interface SiteComparisonParams {
   urls: string[];
@@ -137,31 +138,40 @@ export async function executeL2SiteComparison(
   const {
     urls,
     device = 'mobile',
-    categories = ['performance'],
-    useCache = true
+    categories = ['performance']
   } = params;
 
   // Collect data for all sites
   const batchResult = await executeL1BatchCollect({
     urls,
     device,
-    categories,
-    parallel: 3,
-    useCache
+    categories
   });
 
-  if (!batchResult.success || !batchResult.results) {
+  if (!batchResult.reports || batchResult.reports.length === 0) {
     throw new Error('Failed to collect site data');
   }
 
   // Process each site's metrics
   const sites: SiteMetrics[] = [];
 
-  for (const result of batchResult.results) {
-    if (result.report) {
-      const metrics = extractMetrics(result.report);
+  for (const result of batchResult.reports) {
+    // Load the full report using the report ID
+    const storage = getDefaultStorage();
+    const reportsResult = storage.getAllReports();
+    if (!reportsResult.isOk()) continue;
+    const storedReport = reportsResult.value.find(r => r.id === result.reportId);
+    if (!storedReport) continue;
+
+    const loadResult = storage.loadReport(storedReport);
+    if (!loadResult.isOk()) continue;
+
+    const report = loadResult.value;
+
+    if (report) {
+      const metrics = extractMetrics(report);
       const performanceScore = Math.round(
-        (result.report.categories?.performance?.score || 0) * 100
+        (report.categories?.performance?.score || 0) * 100
       );
 
       sites.push({
@@ -174,7 +184,7 @@ export async function executeL2SiteComparison(
         si: metrics.si,
         tti: metrics.tti,
         category: categorizeUrl(result.url),
-        issues: identifyIssues(result.report)
+        issues: identifyIssues(report)
       });
     }
   }

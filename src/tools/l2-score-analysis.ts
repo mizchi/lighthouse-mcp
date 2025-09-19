@@ -5,7 +5,6 @@
 
 import { loadReport } from './utils/report-loader.js';
 import { analyzeReport } from '../analyzers/scores.js';
-import type { LighthouseReport } from '../types/index.js';
 
 export interface L2ScoreAnalysisParams {
   reportId?: string;

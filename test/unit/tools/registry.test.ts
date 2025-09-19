@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import {
   initializeRegistry,
   getTool,
@@ -158,7 +158,7 @@ describe('Tool Registry', () => {
 
   describe('Tool metadata', () => {
     it('should have consistent tool structure', () => {
-      for (const [name, tool] of TOOL_REGISTRY) {
+      for (const [, tool] of TOOL_REGISTRY) {
         expect(tool).toHaveProperty('tool');
         expect(tool).toHaveProperty('category');
         expect(tool.tool).toHaveProperty('name');

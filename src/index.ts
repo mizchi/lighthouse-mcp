@@ -18,10 +18,10 @@ export * from './core/runner.js';
 export * from './core/lighthouse.js';
 
 // Re-export analyzers
-export * from './analyzers/index.js';
+// export * from './analyzers/index.js'; // TODO: Add when needed
 
 // Re-export metrics
-export { getMetrics } from './metrics.js';
+// export { getMetrics } from './metrics.js'; // TODO: Add when needed
 
 // Import for re-export with aliases
 import {
@@ -29,10 +29,8 @@ import {
   executeL1BatchCollect,
   executeL1ListReports,
   executeL1GetReport,
-  executeL2PerformanceAnalysis,
   executeL2UnusedCode,
   executeL2CriticalChain,
-  executeL2ComprehensiveIssues,
   executeL2ThirdPartyImpact,
   executeL3PerformanceBudget,
   executeL3PatternInsights,
@@ -48,10 +46,8 @@ export {
   executeL1GetReport as getReport,
 
   // Layer 2 - Analysis
-  executeL2PerformanceAnalysis as analyzePerformance,
   executeL2UnusedCode as analyzeUnusedCode,
   executeL2CriticalChain as analyzeCriticalChain,
-  executeL2ComprehensiveIssues as detectIssues,
   executeL2ThirdPartyImpact as analyzeThirdParty,
 
   // Layer 3 - Intelligence
@@ -63,7 +59,7 @@ export {
 // Default export for convenience
 export default {
   collect: executeL1Collect,
-  analyze: executeL2PerformanceAnalysis,
-  detectIssues: executeL2ComprehensiveIssues,
+  analyzeUnused: executeL2UnusedCode,
+  analyzeCritical: executeL2CriticalChain,
   analyzeBudget: executeL3PerformanceBudget,
 };

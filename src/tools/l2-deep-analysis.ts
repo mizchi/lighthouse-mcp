@@ -7,7 +7,6 @@ import { loadReport } from './utils/report-loader.js';
 import { performDeepAnalysis } from '../analyzers/deepAnalysis.js';
 import { analyzeCriticalChains } from '../analyzers/criticalChain.js';
 import { analyzeUnusedCode } from '../analyzers/unusedCode.js';
-import type { LighthouseReport } from '../types/index.js';
 
 export interface L2DeepAnalysisParams {
   reportId?: string;
@@ -85,8 +84,8 @@ export const l2DeepAnalysisTool: MCPTool = {
 
     // Format output as markdown
     let output = `# Deep Analysis Report\n\n`;
-    output += `**URL:** ${result.url}\n`;
-    output += `**Performance Score:** ${result.analysis.performanceScore}/100\n\n`;
+    output += `**URL:** ${result.reportId || 'Unknown'}\n`;
+    output += `**Performance Score:** ${result.analysis.score}/100\n\n`;
 
     output += `## Key Metrics\n`;
     output += `- **LCP:** ${result.analysis.metrics.lcp}ms\n`;

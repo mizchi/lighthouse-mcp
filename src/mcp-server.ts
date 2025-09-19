@@ -21,8 +21,7 @@ import {
   getTool,
   getAllToolNames,
   TOOL_CATEGORIES,
-  getToolsByCategory,
-  generateCatalog
+  getToolsByCategory
 } from './tools/registry.js';
 
 // Server metadata
@@ -106,7 +105,8 @@ async function main() {
               for (const tool of tools) {
                 // Find the primary name (not an alias)
                 let primaryName = '';
-                for (const [toolName, registeredTool] of Array.from(getTool)) {
+                for (const toolName of getAllToolNames()) {
+                  const registeredTool = getTool(toolName);
                   if (registeredTool === tool && !registeredTool.aliases?.includes(toolName)) {
                     primaryName = toolName;
                     break;

@@ -178,10 +178,10 @@ export const l2CriticalChainReportTool: MCPTool = {
     }
   },
   execute: async (params: any) => {
-    const report = await generateCriticalChainReport(params.reportIds || [], params.urls || []);
+    const report = await generateCriticalChainReport(params);
     return {
       type: 'text',
-      text: report
+      text: JSON.stringify(report, null, 2)
     };
   }
 };

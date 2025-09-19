@@ -50,7 +50,7 @@ export interface WeightedIssuesResult {
  */
 function getAuditWeight(report: LighthouseReport, auditId: string): number {
   // Check each category for this audit's weight
-  for (const [categoryId, category] of Object.entries(report.categories || {})) {
+  for (const [, category] of Object.entries(report.categories || {})) {
     const auditRef = category.auditRefs?.find(ref => ref.id === auditId);
     if (auditRef?.weight) {
       return auditRef.weight;
@@ -90,7 +90,7 @@ export function analyzeWeightedIssues(
   // Process all audits
   for (const [auditId, audit] of Object.entries(report.audits || {})) {
     // Skip informative audits (no score) or perfect scores
-    if (audit.score === null || audit.score === undefined || audit.score === 1) {
+    if (!audit || audit.score === null || audit.score === undefined || audit.score === 1) {
       continue;
     }
 
@@ -102,7 +102,7 @@ export function analyzeWeightedIssues(
     }
 
     const category = getAuditCategory(report, auditId);
-    const weightedImpact = (1 - audit.score) * weight;
+    const weightedImpact = (1 - audit!.score) * weight;
 
     // Extract metrics from audit
     const metrics: WeightedIssue['metrics'] = {};

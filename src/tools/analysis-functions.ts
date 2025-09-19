@@ -74,8 +74,8 @@ export function analyzeLCPChain(report: LighthouseReport) {
 
   // Get LCP element
   const lcpAudit = report.audits?.['largest-contentful-paint-element'];
-  if (lcpAudit?.details?.items?.[0]) {
-    const lcpItem = lcpAudit.details.items[0] as any;
+  if ((lcpAudit?.details as any)?.items?.[0]) {
+    const lcpItem = (lcpAudit!.details as any).items[0] as any;
     result.lcpElement = {
       url: lcpItem.url,
       selector: lcpItem.node?.selector,
@@ -127,7 +127,7 @@ export function analyzeLCPChain(report: LighthouseReport) {
   }
 
   // Identify bottlenecks
-  const requests = report.audits?.['network-requests']?.details?.items as any[] || [];
+  const requests = (report.audits?.['network-requests']?.details as any)?.items as any[] || [];
   const lcpUrl = result.lcpElement?.url;
 
   if (lcpUrl) {
