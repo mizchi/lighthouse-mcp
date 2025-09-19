@@ -9,15 +9,33 @@ import { executeL1GetReport } from '../../src/tools/l1-get-report.js';
 import { executeL2DeepAnalysis } from '../../src/tools/l2-deep-analysis.js';
 import { executeL2WeightedIssues } from '../../src/tools/l2-weighted-issues.js';
 import { executeL3ActionPlanGenerator } from '../../src/tools/l3-action-plan-generator.js';
+import { rmSync, existsSync } from 'fs';
+import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-describe('Heavy Site Detection', () => {
+describe.skip('Heavy Site Detection (Real Lighthouse)', () => {
   let server: any;
   let serverUrl: string;
 
   beforeAll(async () => {
+    // Kill any lingering Chrome processes from previous tests
+    try {
+      if (process.platform === 'linux' || process.platform === 'darwin') {
+        execSync('pkill -f "chrome.*--headless" || true', { stdio: 'ignore' });
+      }
+    } catch {}
+
+    // Clean up browser data directories
+    const browserDirs = '.lhdata/mcp';
+    if (existsSync(browserDirs)) {
+      try {
+        rmSync(browserDirs, { recursive: true, force: true });
+      } catch (e) {
+        console.log('Could not clean browser dirs:', e);
+      }
+    }
     // Start a local server to serve the heavy HTML file
     const port = 9876;
     const heavyHtml = readFileSync(
@@ -46,16 +64,24 @@ describe('Heavy Site Detection', () => {
         resolve();
       });
     });
+
+    // Clean up Chrome processes after test
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for Chrome to close
+    try {
+      if (process.platform === 'linux' || process.platform === 'darwin') {
+        execSync('pkill -f "chrome.*--headless" || true', { stdio: 'ignore' });
+      }
+    } catch {}
   });
 
-  it.skip('should detect performance issues in extremely heavy page', async () => {
+  it('should detect performance issues in extremely heavy page', async () => {
     // Step 1: Collect Lighthouse report
     console.log('Collecting Lighthouse report for heavy page...');
     const collectResult = await executeL1Collect({
       url: serverUrl,
       device: 'desktop',
       categories: ['performance'],
-      throttling: false // No throttling to see raw performance
+      gather: true // Force fresh collection
     });
 
     expect(collectResult.reportId).toBeDefined();
@@ -65,8 +91,8 @@ describe('Heavy Site Detection', () => {
       reportId: collectResult.reportId
     });
 
-    expect(reportResult.report).toBeDefined();
-    const report = reportResult.report!;
+    expect(reportResult.data).toBeDefined();
+    const report = reportResult.data;
 
     // Step 2: Verify poor performance score
     const performanceScore = report.categories?.performance?.score || 0;
@@ -154,12 +180,13 @@ describe('Heavy Site Detection', () => {
     console.log('===================================\n');
   }, 60000); // 60 second timeout for Lighthouse
 
-  it.skip('should detect specific performance metrics issues', async () => {
+  it('should detect specific performance metrics issues', async () => {
     // Collect report with specific focus on metrics
     const collectResult = await executeL1Collect({
       url: serverUrl,
       device: 'desktop',
-      categories: ['performance']
+      categories: ['performance'],
+      gather: true // Force fresh collection
     });
 
     // Get the full report
@@ -167,7 +194,7 @@ describe('Heavy Site Detection', () => {
       reportId: collectResult.reportId
     });
 
-    const report = reportResult.report!;
+    const report = reportResult.data;
     const metrics = report.audits;
 
     // Check Core Web Vitals

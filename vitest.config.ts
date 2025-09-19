@@ -27,7 +27,7 @@ export default defineConfig({
         '**/*.spec.ts',
       ],
     },
-    testTimeout: 30000,
+    testTimeout: 90000, // 90 seconds for E2E tests
     hookTimeout: 30000,
   },
   resolve: {
