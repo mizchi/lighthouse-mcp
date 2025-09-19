@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Intensive DOM & CSS Test</title>
+
+    <style id="massive-css">
+        /* ============================================
+           MASSIVE CSS WITH EXPENSIVE SELECTORS
+           This will cause high CPU usage during:
+           1. CSS parsing
+           2. Style recalculation
+           3. Layout computation
+           4. Paint operations
+           ============================================ */
+
+        /* 1. Descendant combinators (expensive) */
+        body div div div div div { background: rgba(255, 0, 0, 0.001); }
+        body > div > div > div > div > div > div { margin: 0.1px; }
+        body div div div div div div div { padding: 0.01px; }
+        body * * * * * { border: 0.001px solid transparent; }
+
+        /* 2. Universal selectors with pseudo-classes (very expensive) */
+        *:hover { transform: translateX(0.0001px); }
+        *:not(:first-child):not(:last-child) { position: relative; }
+        *:nth-child(odd):not(.exclude):not([data-skip]) { opacity: 0.9999; }
+
+        /* 3. Attribute selectors with partial matching (expensive) */
+        [class*="item"] { display: inline-block; }
+        [class^="box-"][class$="-end"] { flex: 1; }
+        [data-id*="node"] { z-index: 1; }
+
+        /* 4. Complex pseudo-selectors */
+        div:nth-of-type(3n+1):not(:last-child) { min-height: 1px; }
+        span:nth-child(2n):not(:first-of-type):not(:last-of-type) { display: inline; }
+
+        /* 5. Generate thousands of specific rules for high memory usage */
+        ${Array.from({length: 1000}, (_, i) => `
+        .node-${i} {
+            background: hsl(${i % 360}, 50%, 50%);
+            box-shadow: 0 0 ${i % 10}px rgba(0,0,0,0.1);
+            transform: rotate(${i * 0.01}deg);
+        }
+        .node-${i}:hover {
+            background: hsl(${(i + 180) % 360}, 60%, 60%);
+            transform: scale(1.0001) rotate(${i * 0.01}deg);
+        }
+        .node-${i}::before {
+            content: "${i}";
+            position: absolute;
+            opacity: 0.01;
+        }
+        .node-${i}::after {
+            content: "";
+            display: block;
+            width: ${i % 100}%;
+            height: ${i % 100}px;
+        }
+
+        /* Expensive descendant selectors for each node */
+        .container .wrapper .node-${i} { margin-left: ${i * 0.001}px; }
+        body > div > div .node-${i} > span { color: rgb(${i % 255}, ${(i * 2) % 255}, ${(i * 3) % 255}); }
+
+        /* Sibling combinators (force browser to check all siblings) */
+        .node-${i} ~ .node-${i + 1} { margin-top: 0.${i}px; }
+        .node-${i} + .node-${i + 1} { padding-top: 0.${i}px; }
+        `).join('\n')}
+
+        /* 6. Animation keyframes that trigger constant repaints */
+        @keyframes cpuIntensive {
+            0% { transform: rotate(0deg) scale(1) translateX(0px); }
+            25% { transform: rotate(90deg) scale(1.01) translateX(1px); }
+            50% { transform: rotate(180deg) scale(1.02) translateX(2px); }
+            75% { transform: rotate(270deg) scale(1.01) translateX(1px); }
+            100% { transform: rotate(360deg) scale(1) translateX(0px); }
+        }
+
+        /* Apply animation to many elements */
+        .animated { animation: cpuIntensive 10s infinite linear; }
+
+        /* 7. Complex calc() expressions */
+        .complex-calc {
+            width: calc((100% - 20px) * 0.5 + 10px / 2 - 1rem + 2vh);
+            height: calc(100vh - 10px - 20% + 5rem / 2 * 1.5);
+            padding: calc(1em + 2px * 3 - 0.5rem / 2);
+        }
+
+        /* 8. Filters and blend modes (GPU/CPU intensive) */
+        .filtered {
+            filter: blur(0.5px) brightness(1.01) contrast(1.01) drop-shadow(0 0 1px rgba(0,0,0,0.1));
+            mix-blend-mode: multiply;
+        }
+
+        /* 9. Complex grid layouts */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(calc(10% - 10px), 1fr));
+            grid-auto-rows: calc(50px + 1vh);
+            gap: calc(0.5rem + 1px);
+        }
+
+        /* 10. Nested media queries */
+        @media screen and (min-width: 0px) {
+            @supports (display: grid) {
+                ${Array.from({length: 100}, (_, i) => `
+                .responsive-${i} {
+                    width: calc(${i}% + ${i}px);
+                    font-size: calc(${i * 0.1}rem + ${i}px);
+                }
+                `).join('\n')}
+            }
+        }
+
+        /* 11. Expensive text shadows and effects */
+        .heavy-text {
+            text-shadow:
+                0 1px 0 #ccc,
+                0 2px 0 #c9c9c9,
+                0 3px 0 #bbb,
+                0 4px 0 #b9b9b9,
+                0 5px 0 #aaa,
+                0 6px 1px rgba(0,0,0,.1),
+                0 0 5px rgba(0,0,0,.1),
+                0 1px 3px rgba(0,0,0,.3),
+                0 3px 5px rgba(0,0,0,.2),
+                0 5px 10px rgba(0,0,0,.25);
+        }
+
+        /* 12. Force layout thrashing with position changes */
+        .thrash-layout {
+            position: absolute;
+            top: calc(50% - 10px);
+            left: calc(50% - 10px);
+            transform: translate(-50%, -50%);
+        }
+    </style>
+
+    <script>
+        // Generate more CSS rules dynamically to increase memory usage
+        window.addEventListener('DOMContentLoaded', () => {
+            const styleEl = document.createElement('style');
+            let dynamicCSS = '';
+
+            // Generate 500 more complex rules
+            for (let i = 0; i < 500; i++) {
+                dynamicCSS += `
+                    .dynamic-${i}:nth-child(odd):hover::before {
+                        content: "${i}";
+                        transform: rotate(${i}deg) scale(${1 + i * 0.001});
+                        background: linear-gradient(${i}deg,
+                            hsl(${i}, 50%, 50%),
+                            hsl(${i + 90}, 50%, 50%),
+                            hsl(${i + 180}, 50%, 50%));
+                    }
+
+                    body.loaded .container-${i} > .wrapper > .item:nth-of-type(${i % 10 + 1}) {
+                        animation-delay: ${i * 10}ms;
+                        transition: all ${100 + i}ms cubic-bezier(0.4, 0, 0.2, 1);
+                    }
+                `;
+            }
+
+            styleEl.textContent = dynamicCSS;
+            document.head.appendChild(styleEl);
+            document.body.classList.add('loaded');
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="heavy-text">CPU Intensive DOM & CSS Test</h1>
+
+        <div class="info">
+            <p>This page is designed to stress the CPU with:</p>
+            <ul>
+                <li>10,000+ DOM nodes with complex nesting</li>
+                <li>5,000+ CSS rules with expensive selectors</li>
+                <li>Complex animations and transitions</li>
+                <li>Forced layout recalculations</li>
+                <li>Heavy style computations</li>
+            </ul>
+        </div>
+
+        <!-- Generate massive DOM tree with inline JavaScript -->
+        <div id="dom-generator"></div>
+
+        <script>
+            // Create deeply nested DOM structure
+            const container = document.getElementById('dom-generator');
+            const fragment = document.createDocumentFragment();
+
+            // Create 100 main containers
+            for (let i = 0; i < 100; i++) {
+                const mainDiv = document.createElement('div');
+                mainDiv.className = `container-${i} complex-calc filtered grid-container`;
+                mainDiv.setAttribute('data-id', `node-${i}`);
+
+                // Create 10 wrappers per container
+                for (let j = 0; j < 10; j++) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = `wrapper wrapper-${j} animated`;
+
+                    // Create 10 items per wrapper (total 10,000 nodes)
+                    for (let k = 0; k < 10; k++) {
+                        const item = document.createElement('div');
+                        const nodeId = i * 100 + j * 10 + k;
+                        item.className = `item node-${nodeId} responsive-${nodeId % 100} dynamic-${nodeId % 500} thrash-layout`;
+                        item.setAttribute('data-id', `item-${nodeId}`);
+                        item.setAttribute('data-index', nodeId);
+                        item.setAttribute('data-row', i);
+                        item.setAttribute('data-col', j);
+                        item.setAttribute('data-item', k);
+
+                        // Add nested spans for even more complexity
+                        const span1 = document.createElement('span');
+                        span1.className = 'heavy-text';
+                        span1.textContent = `Node ${nodeId}`;
+
+                        const span2 = document.createElement('span');
+                        span2.className = 'nested-span';
+
+                        const span3 = document.createElement('span');
+                        span3.className = 'deep-span';
+                        span3.innerHTML = `<em><strong><u>${nodeId}</u></strong></em>`;
+
+                        span2.appendChild(span3);
+                        span1.appendChild(span2);
+                        item.appendChild(span1);
+
+                        // Add pseudo-random inline styles to force style recalculation
+                        item.style.cssText = `
+                            margin-left: ${Math.random() * 0.1}px;
+                            padding-top: ${Math.random() * 0.1}px;
+                            opacity: ${0.9 + Math.random() * 0.1};
+                            z-index: ${nodeId % 100};
+                        `;
+
+                        wrapper.appendChild(item);
+                    }
+
+                    mainDiv.appendChild(wrapper);
+                }
+
+                fragment.appendChild(mainDiv);
+            }
+
+            container.appendChild(fragment);
+
+            // Force constant style recalculations
+            let frameCount = 0;
+            function thrashStyles() {
+                const elements = document.querySelectorAll('.item');
+                const len = Math.min(100, elements.length);
+
+                // Read-write pattern that causes layout thrashing
+                for (let i = 0; i < len; i++) {
+                    const el = elements[i];
+                    // Read (forces layout)
+                    const height = el.offsetHeight;
+                    const width = el.offsetWidth;
+
+                    // Write (invalidates layout)
+                    el.style.transform = `translateX(${Math.sin(frameCount * 0.01 + i) * 0.1}px)`;
+                    el.style.opacity = 0.9 + Math.sin(frameCount * 0.01) * 0.1;
+                }
+
+                frameCount++;
+
+                // Continue thrashing for 5 seconds
+                if (frameCount < 300) {
+                    requestAnimationFrame(thrashStyles);
+                }
+            }
+
+            // Start layout thrashing after page load
+            window.addEventListener('load', () => {
+                setTimeout(thrashStyles, 100);
+
+                // Also trigger expensive hover effects programmatically
+                setInterval(() => {
+                    const randomIndex = Math.floor(Math.random() * 100);
+                    const element = document.querySelector(`.node-${randomIndex}`);
+                    if (element) {
+                        // Trigger :hover styles recalculation
+                        element.classList.add('force-hover');
+                        setTimeout(() => element.classList.remove('force-hover'), 50);
+                    }
+                }, 100);
+
+                // Force style recalculation by adding/removing classes
+                setInterval(() => {
+                    document.body.classList.toggle('recalc');
+                    // This forces the browser to recalculate all styles
+                    const forceRecalc = document.body.offsetHeight;
+                }, 500);
+            });
+
+            // Add even more styles dynamically
+            const additionalStyles = document.createElement('style');
+            additionalStyles.textContent = `
+                /* Force hover state programmatically */
+                .force-hover,
+                .item:hover {
+                    transform: scale(1.01) rotate(0.5deg) !important;
+                    box-shadow: 0 0 10px rgba(255,0,0,0.5);
+                    z-index: 9999 !important;
+                }
+
+                /* Expensive recalculation trigger */
+                body.recalc * {
+                    transform: translateZ(0);
+                    will-change: transform;
+                }
+
+                /* More expensive selectors */
+                ${Array.from({length: 200}, (_, i) => `
+                body.loaded .container-${i % 100} > .wrapper:nth-child(${i % 10 + 1}) > .item:not(:first-child):not(:last-child) {
+                    background: linear-gradient(${i * 3.6}deg,
+                        rgba(255,${i % 255},0,0.1),
+                        rgba(0,255,${i % 255},0.1));
+                }
+                `).join('\n')}
+            `;
+            document.head.appendChild(additionalStyles);
+
+            console.log('DOM nodes created:', document.querySelectorAll('*').length);
+            console.log('CSS rules:', Array.from(document.styleSheets).reduce((sum, sheet) => {
+                try {
+                    return sum + (sheet.cssRules?.length || 0);
+                } catch(e) {
+                    return sum;
+                }
+            }, 0));
+        </script>
+    </div>
+</body>
+</html>
