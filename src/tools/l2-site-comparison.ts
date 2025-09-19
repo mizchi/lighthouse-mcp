@@ -138,14 +138,16 @@ export async function executeL2SiteComparison(
   const {
     urls,
     device = 'mobile',
-    categories = ['performance']
+    categories = ['performance'],
+    useCache
   } = params;
 
   // Collect data for all sites
   const batchResult = await executeL1BatchCollect({
     urls,
     device,
-    categories
+    categories,
+    gather: useCache === false // If useCache is false, gather fresh data
   });
 
   if (!batchResult.reports || batchResult.reports.length === 0) {

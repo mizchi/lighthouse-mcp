@@ -311,10 +311,10 @@ describe('L3 Performance Budget', () => {
       } as any);
 
       const mockDb = {
-        getReportsByUrl: vi.fn(() => [
-          { data: JSON.stringify(mockReport) },
-          { data: JSON.stringify({ ...mockReport, categories: { performance: { score: 0.5 } } }) },
-          { data: JSON.stringify({ ...mockReport, categories: { performance: { score: 0.4 } } }) }
+        getReports: vi.fn(() => [
+          { id: 1, data: JSON.stringify(mockReport) },
+          { id: 2, data: JSON.stringify({ ...mockReport, categories: { performance: { score: 0.5 } } }) },
+          { id: 3, data: JSON.stringify({ ...mockReport, categories: { performance: { score: 0.4 } } }) }
         ]),
         close: vi.fn()
       };

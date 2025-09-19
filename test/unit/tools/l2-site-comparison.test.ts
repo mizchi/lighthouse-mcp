@@ -1,93 +1,137 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { executeL2SiteComparison, l2SiteComparisonTool } from '../../../src/tools/l2-site-comparison';
 import * as l1BatchCollect from '../../../src/tools/l1-collect-batch';
+import * as reportStorage from '../../../src/core/reportStorage';
 
 vi.mock('../../../src/tools/l1-collect-batch');
+vi.mock('../../../src/core/reportStorage');
 
 describe('L2 Site Comparison', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Mock storage to return our test reports
+    const mockStorage = {
+      getAllReports: vi.fn().mockReturnValue({
+        isOk: () => true,
+        value: [
+          { id: 'report-news-1', url: 'https://www.example-news.com' },
+          { id: 'report-shop-1', url: 'https://www.example-shop.com' },
+          { id: 'report-social-1', url: 'https://www.example-social.com' }
+        ]
+      }),
+      loadReport: vi.fn().mockImplementation((report) => {
+        if (report.id === 'report-news-1') {
+          return { isOk: () => true, value: mockNewsReport };
+        } else if (report.id === 'report-shop-1') {
+          return { isOk: () => true, value: mockShopReport };
+        } else if (report.id === 'report-social-1') {
+          return { isOk: () => true, value: mockSocialReport };
+        }
+        return { isOk: () => false };
+      })
+    };
+
+    vi.mocked(reportStorage.getDefaultStorage).mockReturnValue(mockStorage as any);
   });
 
+  const mockReports = [
+    {
+      reportId: 'report-news-1',
+      url: 'https://www.example-news.com',
+      device: 'mobile',
+      categories: ['performance'],
+      timestamp: Date.now(),
+      cached: false
+    },
+    {
+      reportId: 'report-shop-1',
+      url: 'https://www.example-shop.com',
+      device: 'mobile',
+      categories: ['performance'],
+      timestamp: Date.now(),
+      cached: false
+    },
+    {
+      reportId: 'report-social-1',
+      url: 'https://www.example-social.com',
+      device: 'mobile',
+      categories: ['performance'],
+      timestamp: Date.now(),
+      cached: false
+    }
+  ];
+
   const mockBatchResult = {
-    success: true,
-    results: [
-      {
-        url: 'https://www.example-news.com',
-        report: {
-          requestedUrl: 'https://www.example-news.com',
-          finalUrl: 'https://www.example-news.com',
-          categories: {
-            performance: { score: 0.85 }
-          },
-          audits: {
-            'first-contentful-paint': { numericValue: 1200 },
-            'largest-contentful-paint': { numericValue: 2100 },
-            'cumulative-layout-shift': { numericValue: 0.05 },
-            'total-blocking-time': { numericValue: 200 },
-            'speed-index': { numericValue: 2800 },
-            'interactive': { numericValue: 3200 }
-          }
-        } as any,
-        error: null
+    reports: mockReports,
+    failed: []
+  };
+
+  // Mock report data for each site
+  const mockNewsReport = {
+    requestedUrl: 'https://www.example-news.com',
+    finalUrl: 'https://www.example-news.com',
+    categories: {
+      performance: { score: 0.85 }
+    },
+    audits: {
+      'first-contentful-paint': { numericValue: 1200 },
+      'largest-contentful-paint': { numericValue: 2100 },
+      'cumulative-layout-shift': { numericValue: 0.05 },
+      'total-blocking-time': { numericValue: 200 },
+      'speed-index': { numericValue: 2800 },
+      'interactive': { numericValue: 3200 }
+    }
+  };
+
+  const mockShopReport = {
+    requestedUrl: 'https://www.example-shop.com',
+    finalUrl: 'https://www.example-shop.com',
+    categories: {
+      performance: { score: 0.45 }
+    },
+    audits: {
+      'first-contentful-paint': { numericValue: 3500 },
+      'largest-contentful-paint': { numericValue: 5200 },
+      'cumulative-layout-shift': { numericValue: 0.15 },
+      'total-blocking-time': { numericValue: 800 },
+      'speed-index': { numericValue: 4500 },
+      'interactive': { numericValue: 6000 },
+      'render-blocking-resources': {
+        score: 0.3,
+        details: {
+          overallSavingsMs: 2000
+        }
       },
-      {
-        url: 'https://www.example-shop.com',
-        report: {
-          requestedUrl: 'https://www.example-shop.com',
-          finalUrl: 'https://www.example-shop.com',
-          categories: {
-            performance: { score: 0.45 }
-          },
-          audits: {
-            'first-contentful-paint': { numericValue: 3500 },
-            'largest-contentful-paint': { numericValue: 5200 },
-            'cumulative-layout-shift': { numericValue: 0.15 },
-            'total-blocking-time': { numericValue: 800 },
-            'speed-index': { numericValue: 4500 },
-            'interactive': { numericValue: 6000 },
-            'render-blocking-resources': {
-              score: 0.3,
-              details: {
-                overallSavingsMs: 2000
-              }
-            },
-            'unused-javascript': {
-              score: 0.4,
-              details: {
-                overallSavingsBytes: 150000
-              }
-            }
-          }
-        } as any,
-        error: null
-      },
-      {
-        url: 'https://www.example-social.com',
-        report: {
-          requestedUrl: 'https://www.example-social.com',
-          finalUrl: 'https://www.example-social.com',
-          categories: {
-            performance: { score: 0.65 }
-          },
-          audits: {
-            'first-contentful-paint': { numericValue: 2000 },
-            'largest-contentful-paint': { numericValue: 3000 },
-            'cumulative-layout-shift': { numericValue: 0.08 },
-            'total-blocking-time': { numericValue: 400 },
-            'third-party-summary': {
-              details: {
-                items: [
-                  { entity: 'Analytics', blockingTime: 600 },
-                  { entity: 'Ads', blockingTime: 800 }
-                ]
-              }
-            }
-          }
-        } as any,
-        error: null
+      'unused-javascript': {
+        score: 0.4,
+        details: {
+          overallSavingsBytes: 150000
+        }
       }
-    ]
+    }
+  };
+
+  const mockSocialReport = {
+    requestedUrl: 'https://www.example-social.com',
+    finalUrl: 'https://www.example-social.com',
+    categories: {
+      performance: { score: 0.65 }
+    },
+    audits: {
+      'first-contentful-paint': { numericValue: 2000 },
+      'largest-contentful-paint': { numericValue: 3000 },
+      'cumulative-layout-shift': { numericValue: 0.08 },
+      'total-blocking-time': { numericValue: 400 },
+      'third-party-summary': {
+        details: {
+          items: [
+            { entity: 'Analytics', blockingTime: 600 },
+            { entity: 'Ads', blockingTime: 800 }
+          ]
+        }
+      }
+    }
   };
 
   describe('executeL2SiteComparison', () => {
@@ -151,8 +195,8 @@ describe('L2 Site Comparison', () => {
 
     it('should identify performance issues', async () => {
       vi.mocked(l1BatchCollect.executeL1BatchCollect).mockResolvedValue({
-        success: true,
-        results: [mockBatchResult.results[1]] // Only the shop site with issues
+        reports: [mockReports[1]], // Only the shop site with issues
+        failed: []
       });
 
       const result = await executeL2SiteComparison({
@@ -198,9 +242,9 @@ describe('L2 Site Comparison', () => {
 
     it('should handle batch collection errors', async () => {
       vi.mocked(l1BatchCollect.executeL1BatchCollect).mockResolvedValue({
-        success: false,
-        results: null
-      } as any);
+        reports: [],
+        failed: []
+      });
 
       await expect(
         executeL2SiteComparison({ urls: ['https://example.com'] })
@@ -217,7 +261,7 @@ describe('L2 Site Comparison', () => {
 
       expect(l1BatchCollect.executeL1BatchCollect).toHaveBeenCalledWith(
         expect.objectContaining({
-          useCache: true
+          gather: false // useCache: true => gather: false
         })
       );
     });
