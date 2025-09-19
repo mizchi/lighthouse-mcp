@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High CLS - Layout Shift Problems</title>
+
+    <!-- Problem: Web fonts causing FOIT/FOUT -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Missing font-display: swap causes invisible text -->
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            /* Problem: No fallback font metrics matching */
+        }
+
+        /* Problem 1: Images without explicit dimensions */
+        .hero-image {
+            width: 100%;
+            /* Missing: height or aspect-ratio */
+        }
+
+        .product-image {
+            width: 300px;
+            /* Missing height causes reflow when image loads */
+        }
+
+        /* Problem 2: Dynamic content insertion areas */
+        .ad-container {
+            /* No min-height reserved for ads */
+        }
+
+        .notification-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            /* Will push content down when it appears */
+        }
+
+        /* Problem 3: Animations that trigger layout */
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .animated-banner {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        /* Problem 4: Iframe without dimensions */
+        iframe {
+            width: 100%;
+            /* Missing height reservation */
+        }
+
+        /* Problem 5: Content that loads at different times */
+        .lazy-content {
+            min-height: 0;
+            /* Should have min-height to prevent shift */
+        }
+    </style>
+</head>
+<body>
+    <!-- Problem 6: Notification bar injected after page load -->
+    <div id="notification-placeholder"></div>
+
+    <!-- Problem 7: Header with dynamic height -->
+    <header id="dynamic-header">
+        <h1>High CLS Demo Page</h1>
+        <!-- Menu will be injected here causing shift -->
+        <div id="menu-placeholder"></div>
+    </header>
+
+    <div class="container">
+        <!-- Problem 8: Hero image without dimensions -->
+        <img class="hero-image" src="https://picsum.photos/1200/400" alt="Hero">
+        <!-- No width/height attributes = CLS when loaded -->
+
+        <!-- Problem 9: Content injected between existing elements -->
+        <div id="injection-point-1"></div>
+
+        <h2>Product Gallery</h2>
+
+        <div class="grid">
+            <!-- Problem 10: Images in grid without aspect ratio -->
+            <div class="product-card">
+                <img class="product-image" src="https://picsum.photos/300/300?random=1" alt="Product 1">
+                <h3>Product 1</h3>
+                <p>$99.99</p>
+            </div>
+
+            <div class="product-card">
+                <img class="product-image" src="https://picsum.photos/300/300?random=2" alt="Product 2">
+                <h3>Product 2</h3>
+                <p>$149.99</p>
+            </div>
+
+            <!-- Problem 11: Dynamically added products -->
+            <div id="dynamic-products"></div>
+        </div>
+
+        <!-- Problem 12: Ad slot without reserved space -->
+        <div class="ad-container" id="ad-mid-content"></div>
+
+        <!-- Problem 13: Video embed without aspect ratio -->
+        <div class="video-container">
+            <iframe id="video-frame" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+
+        <!-- Problem 14: Accordion that changes height -->
+        <div class="accordion">
+            <button onclick="toggleAccordion()">Click to expand</button>
+            <div id="accordion-content" style="display: none;">
+                <p>This content appears suddenly and pushes everything down.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+            </div>
+        </div>
+
+        <!-- Problem 15: Table that loads data dynamically -->
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- Rows will be added dynamically -->
+            </tbody>
+        </table>
+
+        <!-- Problem 16: Infinite scroll container -->
+        <div id="infinite-scroll">
+            <!-- Content loaded as user scrolls -->
+        </div>
+    </div>
+
+    <script>
+        // Problem 17: Late-loading notification bar
+        setTimeout(() => {
+            document.getElementById('notification-placeholder').innerHTML = `
+                <div class="notification-bar animated-banner">
+                    🎉 Special offer! 50% off everything! This banner just shifted your entire page down!
+                </div>
+            `;
+        }, 1000);
+
+        // Problem 18: Dynamic menu injection
+        setTimeout(() => {
+            document.getElementById('menu-placeholder').innerHTML = `
+                <nav style="padding: 20px; background: #333; color: white;">
+                    <a href="#" style="color: white; margin: 0 10px;">Home</a>
+                    <a href="#" style="color: white; margin: 0 10px;">Products</a>
+                    <a href="#" style="color: white; margin: 0 10px;">About</a>
+                    <a href="#" style="color: white; margin: 0 10px;">Contact</a>
+                </nav>
+            `;
+        }, 1500);
+
+        // Problem 19: Content injection between elements
+        setTimeout(() => {
+            document.getElementById('injection-point-1').innerHTML = `
+                <div style="padding: 40px; background: #f0f0f0; margin: 20px 0;">
+                    <h2>Injected Content Block</h2>
+                    <p>This content appears after initial render and causes layout shift!</p>
+                </div>
+            `;
+        }, 2000);
+
+        // Problem 20: Dynamic product loading
+        setTimeout(() => {
+            document.getElementById('dynamic-products').innerHTML = `
+                <div class="product-card">
+                    <img class="product-image" src="https://picsum.photos/300/300?random=3" alt="Product 3">
+                    <h3>Product 3 (Dynamically Added)</h3>
+                    <p>$199.99</p>
+                </div>
+            `;
+        }, 2500);
+
+        // Problem 21: Ad loading without reserved space
+        setTimeout(() => {
+            document.getElementById('ad-mid-content').innerHTML = `
+                <div style="height: 250px; background: #ddd; display: flex; align-items: center; justify-content: center;">
+                    <p>Advertisement - 728x250</p>
+                </div>
+            `;
+        }, 3000);
+
+        // Problem 22: Video iframe source set after load
+        setTimeout(() => {
+            document.getElementById('video-frame').src = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+            document.getElementById('video-frame').style.height = '400px';
+        }, 3500);
+
+        // Problem 23: Table data loading
+        setTimeout(() => {
+            const tableBody = document.getElementById('table-body');
+            for (let i = 1; i <= 10; i++) {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>Item ${i}</td>
+                    <td>$${(Math.random() * 100).toFixed(2)}</td>
+                    <td>Active</td>
+                `;
+            }
+        }, 4000);
+
+        // Problem 24: Accordion toggle function
+        function toggleAccordion() {
+            const content = document.getElementById('accordion-content');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                // Causes layout shift when expanding
+            } else {
+                content.style.display = 'none';
+            }
+        }
+
+        // Problem 25: Font loading causing reflow
+        document.fonts.ready.then(() => {
+            // After fonts load, add content that uses them
+            const header = document.querySelector('h1');
+            header.style.fontSize = '48px';
+            header.style.fontWeight = '900';
+            // This changes text metrics and causes shift
+        });
+
+        // Problem 26: Image lazy loading without placeholder
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = document.createElement('img');
+                    img.src = 'https://picsum.photos/800/600?random=' + Date.now();
+                    img.style.width = '100%';
+                    // No height specified - will cause shift
+                    document.getElementById('infinite-scroll').appendChild(img);
+                }
+            });
+        });
+
+        // Observe a sentinel element for infinite scroll
+        setTimeout(() => {
+            const sentinel = document.createElement('div');
+            sentinel.id = 'scroll-sentinel';
+            document.getElementById('infinite-scroll').appendChild(sentinel);
+            observer.observe(sentinel);
+        }, 1000);
+
+        // Problem 27: Style changes after user interaction
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('product-card')) {
+                // Expand card on click - causes layout shift
+                e.target.style.transform = 'scale(1.1)';
+                e.target.style.padding = '20px';
+            }
+        });
+
+        // Problem 28: Cookie banner appearing late
+        setTimeout(() => {
+            const cookieBanner = document.createElement('div');
+            cookieBanner.style.cssText = `
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                background: #333;
+                color: white;
+                padding: 30px;
+                text-align: center;
+            `;
+            cookieBanner.innerHTML = `
+                <p>We use cookies! This banner just covered your content!</p>
+                <button onclick="this.parentElement.remove()">Accept</button>
+            `;
+            document.body.appendChild(cookieBanner);
+        }, 5000);
+    </script>
+</body>
+</html>

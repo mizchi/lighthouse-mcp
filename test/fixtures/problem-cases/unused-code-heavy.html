@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unused Code Heavy - 90% Unused CSS/JS</title>
+
+    <!-- Problem: Entire CSS frameworks when only using a few classes -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+
+    <!-- Problem: Massive inline CSS with mostly unused rules -->
+    <style>
+        /* Only .container and h1 are actually used from this massive CSS */
+
+        /* Unused animations */
+        @keyframes unused-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes unused-pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        @keyframes unused-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Hundreds of unused component styles */
+        .unused-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+        .unused-modal-backdrop { background: rgba(0,0,0,0.5); }
+        .unused-modal-content { background: white; padding: 20px; }
+        .unused-modal-header { border-bottom: 1px solid #ddd; }
+        .unused-modal-body { padding: 20px 0; }
+        .unused-modal-footer { border-top: 1px solid #ddd; }
+
+        .unused-card { border: 1px solid #ddd; border-radius: 8px; }
+        .unused-card-header { background: #f5f5f5; padding: 10px; }
+        .unused-card-body { padding: 15px; }
+        .unused-card-footer { background: #f5f5f5; padding: 10px; }
+
+        .unused-alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; }
+        .unused-alert-success { color: #3c763d; background-color: #dff0d8; }
+        .unused-alert-info { color: #31708f; background-color: #d9edf7; }
+        .unused-alert-warning { color: #8a6d3b; background-color: #fcf8e3; }
+        .unused-alert-danger { color: #a94442; background-color: #f2dede; }
+
+        /* Unused utility classes */
+        ${Array.from({length: 100}, (_, i) => `
+        .u-margin-${i} { margin: ${i}px !important; }
+        .u-padding-${i} { padding: ${i}px !important; }
+        .u-width-${i} { width: ${i}% !important; }
+        .u-height-${i} { height: ${i}px !important; }
+        .u-color-${i} { color: hsl(${i * 3.6}, 70%, 50%) !important; }
+        .u-bg-${i} { background-color: hsl(${i * 3.6}, 70%, 50%) !important; }
+        `).join('\n')}
+
+        /* Unused media queries */
+        @media (min-width: 576px) {
+            .unused-sm-col-1 { width: 8.333333%; }
+            .unused-sm-col-2 { width: 16.666667%; }
+            .unused-sm-col-3 { width: 25%; }
+            .unused-sm-col-4 { width: 33.333333%; }
+            .unused-sm-col-5 { width: 41.666667%; }
+            .unused-sm-col-6 { width: 50%; }
+        }
+
+        @media (min-width: 768px) {
+            .unused-md-col-1 { width: 8.333333%; }
+            .unused-md-col-2 { width: 16.666667%; }
+            .unused-md-col-3 { width: 25%; }
+            .unused-md-col-4 { width: 33.333333%; }
+            .unused-md-col-5 { width: 41.666667%; }
+            .unused-md-col-6 { width: 50%; }
+        }
+
+        /* Unused pseudo-selectors */
+        .unused-hover:hover { background: #f0f0f0; }
+        .unused-focus:focus { outline: 2px solid blue; }
+        .unused-active:active { transform: scale(0.98); }
+        .unused-visited:visited { color: purple; }
+
+        /* Unused print styles */
+        @media print {
+            .unused-no-print { display: none !important; }
+            .unused-print-only { display: block !important; }
+            .unused-page-break { page-break-after: always; }
+        }
+
+        /* THE ONLY STYLES ACTUALLY USED */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+    </style>
+
+    <!-- Problem: Entire JavaScript libraries for tiny features -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.6/underscore-min.js"></script>
+
+    <!-- Problem: Massive inline JavaScript with mostly unused code -->
+    <script>
+        // ============= UNUSED CODE STARTS =============
+
+        // Unused class definitions
+        class UnusedUserManager {
+            constructor() {
+                this.users = [];
+                this.currentUser = null;
+                this.permissions = {};
+            }
+
+            addUser(user) {
+                this.users.push(user);
+            }
+
+            removeUser(userId) {
+                this.users = this.users.filter(u => u.id !== userId);
+            }
+
+            authenticate(username, password) {
+                // Never called
+                return fetch('/api/auth', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password })
+                });
+            }
+
+            logout() {
+                this.currentUser = null;
+            }
+        }
+
+        class UnusedDataProcessor {
+            constructor() {
+                this.data = [];
+                this.cache = new Map();
+            }
+
+            processData(input) {
+                // Complex processing that's never used
+                return input.map(item => ({
+                    ...item,
+                    processed: true,
+                    timestamp: Date.now()
+                }));
+            }
+
+            validateData(data) {
+                return data.every(item => item.id && item.name);
+            }
+
+            transformData(data) {
+                return data.reduce((acc, item) => {
+                    acc[item.id] = item;
+                    return acc;
+                }, {});
+            }
+        }
+
+        // Unused utility functions
+        function unusedDeepClone(obj) {
+            if (obj === null || typeof obj !== "object") return obj;
+            if (obj instanceof Date) return new Date(obj.getTime());
+            if (obj instanceof Array) return obj.map(item => unusedDeepClone(item));
+            if (obj instanceof Object) {
+                const clonedObj = {};
+                for (const key in obj) {
+                    if (obj.hasOwnProperty(key)) {
+                        clonedObj[key] = unusedDeepClone(obj[key]);
+                    }
+                }
+                return clonedObj;
+            }
+        }
+
+        function unusedDebounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function unusedThrottle(func, limit) {
+            let inThrottle;
+            return function() {
+                const args = arguments;
+                const context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            };
+        }
+
+        // Unused event handlers
+        function handleUnusedClick(event) {
+            console.log('This click handler is never attached');
+        }
+
+        function handleUnusedScroll(event) {
+            console.log('This scroll handler is never attached');
+        }
+
+        function handleUnusedResize(event) {
+            console.log('This resize handler is never attached');
+        }
+
+        // Unused AJAX functions
+        async function fetchUnusedData() {
+            try {
+                const response = await fetch('/api/unused');
+                return await response.json();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function postUnusedData(data) {
+            try {
+                const response = await fetch('/api/unused', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Unused form validation
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validatePhone(phone) {
+            const re = /^\d{3}-\d{3}-\d{4}$/;
+            return re.test(phone);
+        }
+
+        function validatePassword(password) {
+            return password.length >= 8 &&
+                   /[A-Z]/.test(password) &&
+                   /[a-z]/.test(password) &&
+                   /[0-9]/.test(password);
+        }
+
+        // Unused DOM manipulation functions
+        function createUnusedModal(title, content) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>${title}</h2>
+                    <p>${content}</p>
+                    <button onclick="this.parentElement.parentElement.remove()">Close</button>
+                </div>
+            `;
+            return modal;
+        }
+
+        function createUnusedToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            return toast;
+        }
+
+        // Unused animation functions
+        function animateUnused(element, keyframes, options) {
+            return element.animate(keyframes, options);
+        }
+
+        function fadeInUnused(element, duration = 1000) {
+            return animateUnused(element, [
+                { opacity: 0 },
+                { opacity: 1 }
+            ], { duration });
+        }
+
+        function slideInUnused(element, direction = 'left', duration = 1000) {
+            const keyframes = direction === 'left' ?
+                [{ transform: 'translateX(-100%)' }, { transform: 'translateX(0)' }] :
+                [{ transform: 'translateX(100%)' }, { transform: 'translateX(0)' }];
+            return animateUnused(element, keyframes, { duration });
+        }
+
+        // Unused state management
+        const unusedStore = {
+            state: {
+                counter: 0,
+                items: [],
+                user: null
+            },
+            mutations: {
+                increment() {
+                    this.state.counter++;
+                },
+                decrement() {
+                    this.state.counter--;
+                },
+                addItem(item) {
+                    this.state.items.push(item);
+                },
+                removeItem(index) {
+                    this.state.items.splice(index, 1);
+                }
+            }
+        };
+
+        // More unused utility functions
+        ${Array.from({length: 50}, (_, i) => `
+        function unusedUtil${i}(param${i}) {
+            const result = param${i} * ${i};
+            const processed = Math.sqrt(result);
+            return processed + ${i};
+        }
+        `).join('\n')}
+
+        // ============= THE ONLY CODE ACTUALLY USED =============
+
+        // Simple page initialization (5% of total code)
+        document.addEventListener('DOMContentLoaded', () => {
+            const h1 = document.querySelector('h1');
+            if (h1) {
+                h1.textContent = 'Page loaded with 90% unused code!';
+            }
+        });
+    </script>
+</head>
+<body>
+    <!-- Minimal HTML using only 2 CSS classes from thousands defined -->
+    <div class="container">
+        <h1>Unused Code Heavy Page</h1>
+        <p>This page loads massive amounts of CSS and JavaScript but uses less than 10% of it.</p>
+        <p>Check the coverage report in DevTools to see the waste!</p>
+    </div>
+
+    <!-- More unused JavaScript libraries loaded at the bottom -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+
+    <script>
+        // More unused code at the bottom
+        class UnusedComponent {
+            constructor(props) {
+                this.props = props;
+                this.state = {};
+                this.refs = {};
+            }
+
+            render() {
+                return '<div>Never rendered</div>';
+            }
+
+            componentDidMount() {
+                console.log('Never called');
+            }
+
+            componentWillUnmount() {
+                console.log('Never called');
+            }
+        }
+
+        // Unused configuration objects
+        const unusedConfig = {
+            api: {
+                baseURL: 'https://api.example.com',
+                timeout: 5000,
+                headers: {
+                    'Authorization': 'Bearer token',
+                    'Content-Type': 'application/json'
+                }
+            },
+            features: {
+                darkMode: false,
+                animations: true,
+                analytics: true,
+                notifications: true
+            },
+            routes: {
+                home: '/',
+                about: '/about',
+                contact: '/contact',
+                products: '/products'
+            }
+        };
+
+        // The page works with just the DOMContentLoaded listener above
+        // Everything else is dead code!
+    </script>
+</body>
+</html>
