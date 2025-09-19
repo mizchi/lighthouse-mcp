@@ -97,6 +97,13 @@ The MCP server provides tools for AI models to perform Lighthouse analysis:
 lhmcp --mcp
 ```
 
+## Documentation
+
+- 📖 [Analysis Capabilities](./docs/analysis-capabilities.md) - Detailed breakdown of what each tool can detect and analyze
+- 🔍 [Problem-Tool Matrix](./docs/problem-tool-matrix.md) - Quick reference for finding the right tool for specific problems
+- 🏗️ [Tool Architecture](./docs/tool-layers.md) - Understanding the L1/L2/L3 layer design
+- 📚 [MCP Tools Catalog](./docs/MCP-TOOLS-CATALOG.md) - Complete catalog of available tools
+
 ### Tool Architecture (L1/L2/L3)
 
 The tools are organized in a three-layer architecture:
