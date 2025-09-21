@@ -68,6 +68,15 @@ export type {
 } from './l2-deep-analysis.js';
 
 export {
+  l2AdvancedAnalysisTool,
+  executeL2AdvancedAnalysis,
+} from './l2-advanced-analysis.js';
+export type {
+  L2AdvancedAnalysisParams,
+  L2AdvancedAnalysisResult,
+} from './l2-advanced-analysis.js';
+
+export {
   l2ScoreAnalysisTool,
   executeL2ScoreAnalysis,
 } from './l2-score-analysis.js';
@@ -118,6 +127,15 @@ export type {
   WeightedIssuesResult,
   WeightedIssue,
 } from './l2-weighted-issues.js';
+
+export {
+  l2AdvancedAnalysisTool,
+  executeL2AdvancedAnalysis,
+} from './l2-advanced-analysis.js';
+export type {
+  L2AdvancedAnalysisParams,
+  L2AdvancedAnalysisResult,
+} from './l2-advanced-analysis.js';
 
 // Layer 3 - Interpretation Tools
 export {
@@ -179,6 +197,7 @@ export const allTools = async () => {
   const { l2CriticalChainTool } = await import('./l2-critical-chain.js');
   const { l2UnusedCodeTool } = await import('./l2-unused-code.js');
   const { l2DeepAnalysisTool } = await import('./l2-deep-analysis.js');
+  const { l2AdvancedAnalysisTool } = await import('./l2-advanced-analysis.js');
   const { l2ScoreAnalysisTool } = await import('./l2-score-analysis.js');
   const { l2ThirdPartyImpactTool, l2ProgressiveThirdPartyTool } = await import('./l2-third-party-impact.js');
   const { l2LCPChainAnalysisTool } = await import('./l2-lcp-chain-analysis.js');
@@ -201,6 +220,7 @@ export const allTools = async () => {
     l2CriticalChainTool,
     l2UnusedCodeTool,
     l2DeepAnalysisTool,
+    l2AdvancedAnalysisTool,
     l2ScoreAnalysisTool,
     l2ThirdPartyImpactTool,
     l2ProgressiveThirdPartyTool,
@@ -249,6 +269,10 @@ export async function executeTool(name: string, params: any): Promise<any> {
     case 'l2_deep_analysis': {
       const { executeL2DeepAnalysis } = await import('./l2-deep-analysis.js');
       return executeL2DeepAnalysis(params);
+    }
+    case 'l2_advanced_analysis': {
+      const { executeL2AdvancedAnalysis } = await import('./l2-advanced-analysis.js');
+      return executeL2AdvancedAnalysis(params);
     }
     case 'l2_score_analysis': {
       const { executeL2ScoreAnalysis } = await import('./l2-score-analysis.js');

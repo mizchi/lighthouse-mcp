@@ -111,6 +111,8 @@ describe('Heavy Site Detection (Real Lighthouse)', { timeout: 120000 }, () => {
     delete process.env.LIGHTHOUSE_USER_DATA_DIR;
   });
 
+  // NOTE: This test is intentionally skipped in normal test runs due to long execution time.
+  // To run manually: npm test -- --run test/e2e/heavy-site-detection.test.ts
   it.skip('should detect performance issues in extremely heavy page - SLOW', async () => {
     // Step 1: Collect Lighthouse report
     console.log('Collecting Lighthouse report for heavy page...');
@@ -217,6 +219,8 @@ describe('Heavy Site Detection (Real Lighthouse)', { timeout: 120000 }, () => {
     console.log('===================================\n');
   }, 60000); // 60 second timeout for Lighthouse
 
+  // NOTE: This test is intentionally skipped in normal test runs due to long execution time.
+  // To run manually: npm test -- --run test/e2e/heavy-site-detection.test.ts
   it.skip('should detect specific performance metrics issues - SLOW', async () => {
     // Collect report with specific focus on metrics
     const collectResult = await executeL1Collect({

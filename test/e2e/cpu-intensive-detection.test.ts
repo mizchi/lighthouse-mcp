@@ -97,6 +97,8 @@ describe('CPU Intensive DOM & CSS Detection (Real Lighthouse)', { timeout: 12000
     delete process.env.LIGHTHOUSE_USER_DATA_DIR;
   });
 
+  // NOTE: This test is intentionally skipped in normal test runs due to long execution time.
+  // To run manually: npm test -- --run test/e2e/cpu-intensive-detection.test.ts
   it.skip('should detect high CPU usage from complex DOM and CSS - SLOW', async () => {
     console.log('Analyzing CPU intensive page...');
 
@@ -243,6 +245,8 @@ describe('CPU Intensive DOM & CSS Detection (Real Lighthouse)', { timeout: 12000
     console.log('✓ Detected CPU-related performance issues');
   }, 90000); // 90 second timeout for this intensive test
 
+  // NOTE: This test is intentionally skipped in normal test runs due to long execution time.
+  // To run manually: npm test -- --run test/e2e/cpu-intensive-detection.test.ts
   it.skip('should detect expensive CSS selectors impact - SLOW', async () => {
     // Collect report focused on CSS performance
     const collectResult = await executeL1Collect({
