@@ -21,7 +21,6 @@ import { executeL2CriticalChain } from '../../src/tools/l2-critical-chain';
 import { executeL2LCPChainAnalysis } from '../../src/tools/l2-lcp-chain-analysis';
 import { executeL2DeepAnalysis } from '../../src/tools/l2-deep-analysis';
 import { executeL3PerformanceBudget } from '../../src/tools/l3-performance-budget';
-import { executeL3PatternInsights } from '../../src/tools/l3-pattern-insights';
 
 // Mock database and L1 tools
 vi.mock('../../src/core/database');
@@ -35,12 +34,16 @@ describe('MCP Tools Integration', () => {
     vi.clearAllMocks();
 
     // Setup default mock for executeL1GetReport
-    const mockExecuteL1GetReport = executeL1GetReport as vi.MockedFunction<typeof executeL1GetReport>;
+    const mockExecuteL1GetReport = vi.mocked(executeL1GetReport);
     mockExecuteL1GetReport.mockImplementation(async () => ({
-      success: false,
-      error: 'Not configured',
       reportId: '',
-      timestamp: new Date()
+      data: null,
+      metadata: {
+        url: '',
+        device: 'mobile',
+        categories: [],
+        timestamp: Date.now()
+      }
     }));
   });
 
@@ -79,12 +82,16 @@ describe('MCP Tools Integration', () => {
       });
 
       // Mock L1 tool
-      const mockExecuteL1GetReport = executeL1GetReport as vi.MockedFunction<typeof executeL1GetReport>;
+      const mockExecuteL1GetReport = vi.mocked(executeL1GetReport);
       mockExecuteL1GetReport.mockResolvedValue({
-        success: true,
-        data: mockReport,
         reportId: 'test-report-1',
-        timestamp: new Date()
+        data: mockReport,
+        metadata: {
+          url: mockReport.requestedUrl,
+          device: 'mobile',
+          categories: ['performance'],
+          timestamp: Date.now()
+        }
       });
 
       // Execute L2 comprehensive issues analysis
@@ -121,8 +128,16 @@ describe('MCP Tools Integration', () => {
             id: 'unused-javascript',
             title: 'Remove unused JavaScript',
             score: 0.2,
+            scoreDisplayMode: 'numeric' as const,
+            description: 'Remove unused JavaScript to reduce bytes downloaded',
             details: {
-              type: 'opportunity',
+              type: 'opportunity' as const,
+              headings: [
+                { key: 'url', label: 'URL', valueType: 'url' as const },
+                { key: 'totalBytes', label: 'Size', valueType: 'bytes' as const },
+                { key: 'wastedBytes', label: 'Potential Savings', valueType: 'bytes' as const },
+                { key: 'wastedPercent', label: 'Percent', valueType: 'text' as const }
+              ],
               items: [
                 { url: 'https://test.com/app.js', totalBytes: 500000, wastedBytes: 400000, wastedPercent: 80 },
                 { url: 'https://test.com/vendor.js', totalBytes: 300000, wastedBytes: 200000, wastedPercent: 66 }
@@ -133,12 +148,16 @@ describe('MCP Tools Integration', () => {
         }
       });
 
-      const mockExecuteL1GetReport = executeL1GetReport as vi.MockedFunction<typeof executeL1GetReport>;
+      const mockExecuteL1GetReport = vi.mocked(executeL1GetReport);
       mockExecuteL1GetReport.mockResolvedValue({
-        success: true,
-        data: mockReport,
         reportId: 'test-report-2',
-        timestamp: new Date()
+        data: mockReport,
+        metadata: {
+          url: 'https://test.com',
+          device: 'mobile',
+          categories: ['performance'],
+          timestamp: Date.now()
+        }
       });
 
       const unusedResult = await executeL2UnusedCode({
@@ -176,12 +195,16 @@ describe('MCP Tools Integration', () => {
         tbt: 400
       });
 
-      const mockExecuteL1GetReport = executeL1GetReport as vi.MockedFunction<typeof executeL1GetReport>;
+      const mockExecuteL1GetReport = vi.mocked(executeL1GetReport);
       mockExecuteL1GetReport.mockResolvedValue({
-        success: true,
-        data: mockReport,
         reportId: 'test-report-3',
-        timestamp: new Date()
+        data: mockReport,
+        metadata: {
+          url: 'https://example.com',
+          device: 'mobile',
+          categories: ['performance'],
+          timestamp: Date.now()
+        }
       });
 
       // Define strict budget
@@ -228,8 +251,11 @@ describe('MCP Tools Integration', () => {
             id: 'critical-request-chains',
             title: 'Avoid chaining critical requests',
             displayValue: '10 chains found',
+            score: 0.2,
+            scoreDisplayMode: 'numeric' as const,
+            description: 'Minimize critical request chains',
             details: {
-              type: 'criticalrequestchain',
+              type: 'criticalrequestchain' as const,
               chains: createComplexChainWithLCP(lcpUrl),
               longestChain: {
                 duration: 2000,
@@ -242,8 +268,11 @@ describe('MCP Tools Integration', () => {
             id: 'largest-contentful-paint-element',
             title: 'Largest Contentful Paint element',
             displayValue: '4.5 s',
+            score: 0.3,
+            scoreDisplayMode: 'numeric' as const,
+            description: 'The element that triggered the Largest Contentful Paint',
             details: {
-              type: 'list',
+              type: 'list' as const,
               items: [createLCPElement({
                 type: 'image',
                 url: lcpUrl,
@@ -255,8 +284,16 @@ describe('MCP Tools Integration', () => {
           'network-requests': {
             id: 'network-requests',
             title: 'Network Requests',
+            score: 1,
+            scoreDisplayMode: 'informative' as const,
+            description: 'Lists the network requests made during page load',
             details: {
-              type: 'table',
+              type: 'table' as const,
+              headings: [
+                { key: 'url', label: 'URL', valueType: 'url' as const },
+                { key: 'startTime', label: 'Start Time', valueType: 'ms' as const },
+                { key: 'endTime', label: 'End Time', valueType: 'ms' as const }
+              ],
               items: [
                 { url: 'https://example.com/', startTime: 0, endTime: 100 },
                 { url: 'https://example.com/critical.css', startTime: 100, endTime: 200 },
@@ -269,12 +306,16 @@ describe('MCP Tools Integration', () => {
         }
       });
 
-      const mockExecuteL1GetReport = executeL1GetReport as vi.MockedFunction<typeof executeL1GetReport>;
+      const mockExecuteL1GetReport = vi.mocked(executeL1GetReport);
       mockExecuteL1GetReport.mockResolvedValue({
-        success: true,
-        data: mockReport,
         reportId: 'test-lcp-report',
-        timestamp: new Date()
+        data: mockReport,
+        metadata: {
+          url: 'https://test-site.com',
+          device: 'mobile',
+          categories: ['performance'],
+          timestamp: Date.now()
+        }
       });
 
       const lcpAnalysis = await executeL2LCPChainAnalysis({
@@ -299,7 +340,7 @@ describe('MCP Tools Integration', () => {
       if (lcpAnalysis.analysis.bottlenecks) {
         expect(lcpAnalysis.analysis.bottlenecks.length).toBeGreaterThan(0);
         const imageBottleneck = lcpAnalysis.analysis.bottlenecks.find(b =>
-          b && b.resource && b.resource.includes('hero-image')
+          b && b.url && b.url.includes('hero-image')
         );
         // Bottleneck may not always be detected
         if (imageBottleneck) {
@@ -326,12 +367,16 @@ describe('MCP Tools Integration', () => {
         }
       });
 
-      const mockExecuteL1GetReport = executeL1GetReport as vi.MockedFunction<typeof executeL1GetReport>;
+      const mockExecuteL1GetReport = vi.mocked(executeL1GetReport);
       mockExecuteL1GetReport.mockResolvedValue({
-        success: true,
-        data: mockReport,
         reportId: 'composite-test',
-        timestamp: new Date()
+        data: mockReport,
+        metadata: {
+          url: 'https://test.com',
+          device: 'mobile',
+          categories: ['performance'],
+          timestamp: Date.now()
+        }
       });
 
       // Run multiple L2 analyses in parallel
@@ -367,13 +412,10 @@ describe('MCP Tools Integration', () => {
 
   describe('Error Handling Across Layers', () => {
     it('should handle missing report gracefully', async () => {
-      const mockExecuteL1GetReport = executeL1GetReport as vi.MockedFunction<typeof executeL1GetReport>;
-      mockExecuteL1GetReport.mockResolvedValue({
-        success: false,
-        error: 'Report not found',
-        reportId: 'missing-report',
-        timestamp: new Date()
-      });
+      const mockExecuteL1GetReport = vi.mocked(executeL1GetReport);
+      mockExecuteL1GetReport.mockRejectedValue(
+        new Error('Report not found')
+      );
 
       await expect(
         executeL2DeepAnalysis({ reportId: 'missing-report' })
@@ -386,12 +428,16 @@ describe('MCP Tools Integration', () => {
         audits: {} // Missing required audits
       } as any;
 
-      const mockExecuteL1GetReport = executeL1GetReport as vi.MockedFunction<typeof executeL1GetReport>;
+      const mockExecuteL1GetReport = vi.mocked(executeL1GetReport);
       mockExecuteL1GetReport.mockResolvedValue({
-        success: true,
-        data: malformedReport,
         reportId: 'malformed-report',
-        timestamp: new Date()
+        data: malformedReport,
+        metadata: {
+          url: 'https://test.com',
+          device: 'mobile',
+          categories: ['performance'],
+          timestamp: Date.now()
+        }
       });
 
       // Should handle gracefully with defaults

@@ -145,8 +145,16 @@ export function createUnusedCodeAudit(files: Array<{
     id: 'unused-css-rules',
     title: 'Reduce unused CSS',
     score: files.some(f => f.wastedPercent > 80) ? 0 : 0.5,
+    scoreDisplayMode: 'numeric' as const,
+    description: 'Remove unused CSS rules to reduce bytes downloaded',
     details: {
-      type: 'opportunity',
+      type: 'opportunity' as const,
+      headings: [
+        { key: 'url', label: 'URL', valueType: 'url' as const },
+        { key: 'totalBytes', label: 'Size', valueType: 'bytes' as const },
+        { key: 'wastedBytes', label: 'Potential Savings', valueType: 'bytes' as const },
+        { key: 'wastedPercent', label: 'Percent', valueType: 'text' as const }
+      ],
       items: files,
       overallSavingsBytes: files.reduce((sum, f) => sum + f.wastedBytes, 0),
       overallSavingsMs: files.reduce((sum, f) => sum + f.wastedBytes, 0) / 1000
@@ -167,10 +175,18 @@ export function createThirdPartySummary(entities: Array<{
     id: 'third-party-summary',
     title: 'Reduce the impact of third-party code',
     score: entities.some(e => e.blockingTime > 250) ? 0 : 0.5,
+    scoreDisplayMode: 'numeric' as const,
+    description: 'Third-party code can significantly impact load performance',
     details: {
-      type: 'table',
+      type: 'table' as const,
+      headings: [
+        { key: 'entity', label: 'Third-Party', valueType: 'text' as const },
+        { key: 'transferSize', label: 'Transfer Size', valueType: 'bytes' as const },
+        { key: 'blockingTime', label: 'Blocking Time', valueType: 'ms' as const },
+        { key: 'mainThreadTime', label: 'Main-Thread Time', valueType: 'ms' as const }
+      ],
       items: entities.map(e => ({
-        entity: { text: e.entity, type: 'link' },
+        entity: { text: e.entity, type: 'link' as const, url: '#' },
         transferSize: e.transferSize,
         blockingTime: e.blockingTime,
         mainThreadTime: e.mainThreadTime || e.blockingTime * 1.2
@@ -240,8 +256,9 @@ export function createLCPElement(options: {
 
   if (type === 'image') {
     return {
+      type: 'debugdata' as const,
       node: {
-        type: 'node',
+        type: 'node' as const,
         selector,
         nodeLabel: 'Image',
         snippet: `<img src="${url}" alt="">`,
@@ -262,8 +279,9 @@ export function createLCPElement(options: {
     };
   } else {
     return {
+      type: 'debugdata' as const,
       node: {
-        type: 'node',
+        type: 'node' as const,
         selector,
         nodeLabel: 'Text',
         snippet: `<${selector.split('.')[0]}>Sample Text</${selector.split('.')[0]}>`,
